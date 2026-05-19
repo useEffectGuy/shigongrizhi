@@ -1,0 +1,166 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 200rpx;
+}
+
+.projectHeader {
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  margin-bottom: $spacing-md;
+}
+
+.projectSelector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+}
+
+.projectInfo {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.projectIcon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-md;
+  background: $color-primary-gradient;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+}
+
+.projectIconText {
+  color: $color-text-white;
+  font-size: $font-size-lg;
+}
+
+.projectName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  max-width: 360rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectArrow {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.statItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  border: 2px solid transparent;
+  transition: all $transition-base;
+}
+
+.statItemActive {
+  background: rgba(22, 93, 255, 0.1);
+  border-color: $color-primary;
+}
+
+.statValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.statLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.filterInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-sm;
+}
+
+.filterInfoText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.filterInfoLabel {
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.filterInfoClear {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  text-decoration: underline;
+}
+
+.logList {
+  padding: 0 $spacing-lg;
+}
+
+.fab {
+  position: fixed;
+  right: $spacing-lg;
+  bottom: 180rpx;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: $radius-round;
+  background: $color-primary-gradient;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: $shadow-card-hover;
+  z-index: 999;
+  transition: all $transition-base;
+  
+  &:active {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+}
+
+.fabIcon {
+  font-size: 56rpx;
+  color: $color-text-white;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
+}
+
+.noMore {
+  text-align: center;
+  padding: $spacing-xl;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
+}

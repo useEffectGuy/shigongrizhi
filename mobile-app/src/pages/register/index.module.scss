@@ -1,0 +1,79 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: $spacing-lg;
+  padding-top: $spacing-xl;
+}
+
+.formItem {
+  margin-bottom: $spacing-lg;
+}
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-lg;
+  height: $input-height;
+  border: 2rpx solid $color-border;
+  transition: all $transition-fast;
+  
+  &.focused {
+    border-color: $color-primary;
+  }
+}
+
+.inputIcon {
+  font-size: 36rpx;
+  margin-right: $spacing-md;
+  width: 48rpx;
+  text-align: center;
+}
+
+.input {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.submitBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: $color-primary-gradient;
+  color: $color-text-white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-medium;
+  margin-top: $spacing-xl;
+  transition: all $transition-base;
+  
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.submitBtnDisabled {
+  background: $color-text-disabled;
+}
+
+.agreement {
+  margin-top: $spacing-lg;
+  text-align: center;
+}
+
+.agreementText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: $line-height-loose;
+}

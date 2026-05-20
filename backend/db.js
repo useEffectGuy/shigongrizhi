@@ -1,6 +1,7 @@
 require('dotenv').config();
 const initSqlJs = require('sql.js');
 const fs = require('fs');
+const bcrypt = require('bcryptjs');
 
 const DB_PATH = process.env.DB_PATH || 'construction.db';
 
@@ -32,6 +33,7 @@ async function init() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
+      role TEXT DEFAULT 'user',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -87,6 +89,14 @@ async function init() {
     )
   `);
   
+  const userCols = db.exec(`PRAGMA table_info(users)`);
+  if (userCols.length > 0) {
+    const colNames = userCols[0].values.map(c => c[1]);
+    if (!colNames.includes('role')) {
+      db.run(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'`);
+    }
+  }
+  
   const existingCols = db.exec(`PRAGMA table_info(log_entries)`);
   if (existingCols.length > 0) {
     const colNames = existingCols[0].values.map(c => c[1]);
@@ -99,6 +109,14 @@ async function init() {
     if (!colNames.includes('equipment')) {
       db.run(`ALTER TABLE log_entries ADD COLUMN equipment TEXT DEFAULT '[]'`);
     }
+  }
+  
+  const adminUser = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
+  if (!adminUser) {
+    const adminHash = bcrypt.hashSync('admin123', 10);
+    db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+      .run('admin', adminHash, 'admin');
+    console.log('Default admin account created: admin / admin123');
   }
   
   saveDatabase();

@@ -46,7 +46,7 @@ router.post('/login', (req, res) => {
     .run(deviceId, user.id, device_name || 'unknown');
 
   const token = jwt.sign(
-    { user_id: user.id, username: user.username, device_id: deviceId },
+    { user_id: user.id, username: user.username, device_id: deviceId, role: user.role || 'user' },
     JWT_SECRET,
     { expiresIn: TOKEN_EXPIRES_IN }
   );
@@ -54,6 +54,7 @@ router.post('/login', (req, res) => {
     token,
     user_id: user.id,
     username: user.username,
+    role: user.role || 'user',
     device_id: deviceId
   });
 });
@@ -82,7 +83,7 @@ router.delete('/devices/:deviceId', authMiddleware, (req, res) => {
 });
 
 router.get('/me', authMiddleware, (req, res) => {
-  const user = db.prepare('SELECT id, username, created_at FROM users WHERE id = ?')
+  const user = db.prepare('SELECT id, username, role, created_at FROM users WHERE id = ?')
     .get(req.user.user_id);
   res.json(user);
 });

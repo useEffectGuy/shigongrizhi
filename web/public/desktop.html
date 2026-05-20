@@ -254,6 +254,20 @@
     
     .action-btn-secondary:hover { background: var(--bg-tertiary); }
     
+    .action-btn-danger {
+      padding: 12px 24px;
+      background: transparent;
+      color: #e53935;
+      border: 1px solid #e53935;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .action-btn-danger:hover { background: #e53935; color: white; }
+    
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -347,6 +361,16 @@
     
     .tag-accent {
       background: var(--accent);
+      color: white;
+    }
+    
+    .tag-success {
+      background: #4caf50;
+      color: white;
+    }
+    
+    .tag-warning {
+      background: #ff9800;
       color: white;
     }
     
@@ -863,6 +887,34 @@
       margin-bottom: 36px;
     }
     
+    .login-tab-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      padding: 6px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+    }
+    
+    .login-tab {
+      flex: 1;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    .login-tab:hover { color: var(--text-primary); }
+    .login-tab.active {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+    
     .login-input-group { margin-bottom: 20px; }
     
     .login-btn {
@@ -965,6 +1017,151 @@
     }
     
     .weather-refresh:hover { background: var(--accent-hover); }
+    
+    .action-btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .action-btn-sm:hover { background: var(--accent-hover); }
+    
+    .action-btn-secondary-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .action-btn-secondary-sm:hover { background: var(--bg-tertiary); }
+    
+    .action-btn-danger-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      background: transparent;
+      color: #e53935;
+      border: 1px solid #e53935;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .action-btn-danger-sm:hover { background: #e53935; color: white; }
+    
+    .project-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+      margin-bottom: 20px;
+    }
+    
+    .project-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    
+    .project-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .project-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .project-meta {
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+    
+    .project-members {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-light);
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: var(--text-tertiary);
+    }
+    
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--bg-tertiary);
+      border-top: 2px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 12px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .checkbox-item:hover { background: var(--bg-secondary); }
+    
+    .checkbox-item input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .checkbox-label {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
   </style>
 </head>
 <body data-theme="light">
@@ -974,22 +1171,54 @@
       <h1 class="login-title">施工日志</h1>
       <p class="login-subtitle">Construction Log Management</p>
       
-      <div class="login-input-group">
-        <label class="form-label">用户名</label>
-        <input type="text" id="login-username" class="form-input" value="demo" placeholder="请输入用户名">
+      <div class="login-tab-bar">
+        <div class="login-tab active" id="login-tab" onclick="switchAuthTab('login')">登录</div>
+        <div class="login-tab" id="register-tab" onclick="switchAuthTab('register')">注册</div>
       </div>
       
-      <div class="login-input-group">
-        <label class="form-label">密码</label>
-        <input type="password" id="login-password" class="form-input" placeholder="请输入密码">
+      <div id="login-form">
+        <div class="login-input-group">
+          <label class="form-label">用户名</label>
+          <input type="text" id="login-username" class="form-input" value="admin" placeholder="请输入用户名">
+        </div>
+        
+        <div class="login-input-group">
+          <label class="form-label">密码</label>
+          <input type="password" id="login-password" class="form-input" placeholder="请输入密码">
+        </div>
+        
+        <button class="login-btn" onclick="handleLogin()">登 录</button>
+        
+        <div class="login-demo">
+          <strong>演示账号</strong><br>
+          管理员：admin / admin123<br>
+          普通用户：demo / 123456
+        </div>
       </div>
       
-      <button class="login-btn" onclick="handleLogin()">登 录</button>
-      
-      <div class="login-demo">
-        <strong>演示账号</strong><br>
-        用户名：demo<br>
-        密码：123456
+      <div id="register-form" class="hidden">
+        <div class="login-input-group">
+          <label class="form-label">用户名 <span class="required">*</span></label>
+          <input type="text" id="register-username" class="form-input" placeholder="请输入用户名">
+        </div>
+        
+        <div class="login-input-group">
+          <label class="form-label">密码 <span class="required">*</span></label>
+          <input type="password" id="register-password" class="form-input" placeholder="请输入密码（至少6位）">
+        </div>
+        
+        <div class="login-input-group">
+          <label class="form-label">确认密码 <span class="required">*</span></label>
+          <input type="password" id="register-confirm" class="form-input" placeholder="请再次输入密码">
+        </div>
+        
+        <button class="login-btn" onclick="handleRegister()">注 册</button>
+        
+        <div class="login-demo">
+          <strong>注意</strong><br>
+          注册的用户默认角色为普通用户<br>
+          如需管理员权限请联系系统管理员
+        </div>
       </div>
     </div>
   </div>
@@ -999,16 +1228,16 @@
       <div class="sidebar">
         <div class="sidebar-card">
           <div class="user-profile">
-            <div class="user-avatar">张</div>
+            <div class="user-avatar" id="user-avatar">张</div>
             <div class="user-info">
-              <h3>张工程师</h3>
-              <p>项目经理</p>
+              <h3 id="user-display-name">张工程师</h3>
+              <p id="user-role-display">项目经理</p>
             </div>
           </div>
           
           <div class="project-badge">
             <span class="project-badge-icon">🏢</span>
-            <span>市中心商业综合体</span>
+            <span id="current-project">市中心商业综合体</span>
           </div>
         </div>
         
@@ -1022,9 +1251,13 @@
             <span class="nav-item-icon">📊</span>
             <span class="nav-item-label">数据统计</span>
           </div>
-          <div class="nav-item" data-page="projects" onclick="showToast('功能开发中')">
+          <div class="nav-item" data-page="projects" onclick="switchPage('projects')">
             <span class="nav-item-icon">🏢</span>
             <span class="nav-item-label">项目管理</span>
+          </div>
+          <div class="nav-item hidden" id="nav-users" data-page="users" onclick="switchPage('users')">
+            <span class="nav-item-icon">👥</span>
+            <span class="nav-item-label">用户管理</span>
           </div>
           
           <div class="nav-section-title">设置</div>
@@ -1110,6 +1343,57 @@
           
           <div id="stats-content"></div>
         </div>
+        
+        <div id="page-projects" class="hidden">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">项目管理</h1>
+              <p class="page-subtitle">管理项目信息和团队成员</p>
+            </div>
+            <button class="action-btn" onclick="showCreateProjectModal()">
+              <span>➕</span>
+              <span>新建项目</span>
+            </button>
+          </div>
+          
+          <div id="projects-content">
+            <div class="loading">
+              <div class="loading-spinner"></div>
+              <span>加载中...</span>
+            </div>
+          </div>
+        </div>
+        
+        <div id="page-users" class="hidden">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">用户管理</h1>
+              <p class="page-subtitle">管理系统用户和权限</p>
+            </div>
+            <button class="action-btn" onclick="showCreateUserModal()">
+              <span>➕</span>
+              <span>新建用户</span>
+            </button>
+          </div>
+          
+          <div class="content-card">
+            <div class="table-container">
+              <table class="log-table">
+                <thead>
+                  <tr>
+                    <th>用户名</th>
+                    <th>角色</th>
+                    <th>加入时间</th>
+                    <th>参与项目数</th>
+                    <th style="width: 200px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1126,6 +1410,28 @@
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:8519/api';
+
+    async function apiRequest(url, options = {}) {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`${API_BASE}${url}`, {
+        ...options,
+        headers
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Request failed');
+      }
+      return response.json();
+    }
+
     const workerOptions = ['钢筋工', '木工', '混凝土工', '架子工', '水电工', '防水工', '瓦工', '油漆工', '测量员', '安全员', '电工', '焊工'];
     const materialOptions = [
       { name: '混凝土', unit: '方' },
@@ -1259,40 +1565,237 @@
       }
     ];
     
-    function handleLogin() {
-      const username = document.getElementById('login-username').value;
+    let currentUser = null;
+    let projectsList = [];
+    let usersList = [];
+    
+    function getCurrentUser() {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('user_id');
+      const username = localStorage.getItem('username');
+      const role = localStorage.getItem('role');
+      
+      if (token && userId && username && role) {
+        return {
+          token,
+          userId,
+          username,
+          role
+        };
+      }
+      return null;
+    }
+    
+    function switchAuthTab(tab) {
+      const loginTab = document.getElementById('login-tab');
+      const registerTab = document.getElementById('register-tab');
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      
+      loginTab.classList.toggle('active', tab === 'login');
+      registerTab.classList.toggle('active', tab === 'register');
+      loginForm.classList.toggle('hidden', tab !== 'login');
+      registerForm.classList.toggle('hidden', tab !== 'register');
+    }
+    
+    async function handleLogin() {
+      const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value;
       
-      if (username === 'demo' && (password === '123456' || password === '')) {
-        document.getElementById('login-view').classList.add('hidden');
-        document.getElementById('app-view').classList.remove('hidden');
-        updateLogs();
-        updateStats();
-        updateTaskbarTime();
-        setInterval(updateTaskbarTime, 60000);
-      } else {
-        showToast('用户名或密码错误');
+      if (!username || !password) {
+        showToast('请输入用户名和密码');
+        return;
+      }
+      
+      try {
+        showToast('登录中...');
+        const result = await apiRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (result.token) {
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('user_id', result.user.id);
+          localStorage.setItem('username', result.user.username);
+          localStorage.setItem('role', result.user.role);
+          
+          currentUser = result.user;
+          showToast('登录成功');
+          enterApp();
+        } else {
+          showToast('登录失败，请重试');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        
+        const users = JSON.parse(localStorage.getItem('mock_users') || '[]');
+        if (users.length === 0) {
+          localStorage.setItem('mock_users', JSON.stringify([
+            { id: 1, username: 'admin', password: 'admin123', role: 'admin', createdAt: new Date().toISOString() },
+            { id: 2, username: 'demo', password: '123456', role: 'user', createdAt: new Date().toISOString() }
+          ]));
+        }
+        
+        const mockUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
+        const user = mockUsers.find(u => u.username === username && u.password === password);
+        
+        if (user) {
+          localStorage.setItem('token', 'mock_token_' + user.id);
+          localStorage.setItem('user_id', user.id);
+          localStorage.setItem('username', user.username);
+          localStorage.setItem('role', user.role);
+          
+          currentUser = user;
+          showToast('登录成功（模拟）');
+          enterApp();
+        } else {
+          showToast(error.message || '用户名或密码错误');
+        }
       }
     }
     
+    async function handleRegister() {
+      const username = document.getElementById('register-username').value.trim();
+      const password = document.getElementById('register-password').value;
+      const confirm = document.getElementById('register-confirm').value;
+      
+      if (!username || !password || !confirm) {
+        showToast('请填写所有必填项');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showToast('密码至少需要6位');
+        return;
+      }
+      
+      if (password !== confirm) {
+        showToast('两次输入的密码不一致');
+        return;
+      }
+      
+      try {
+        showToast('注册中...');
+        const result = await apiRequest('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (result.token) {
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('user_id', result.user.id);
+          localStorage.setItem('username', result.user.username);
+          localStorage.setItem('role', result.user.role);
+          
+          currentUser = result.user;
+          showToast('注册成功');
+          enterApp();
+        } else {
+          showToast('注册失败，请重试');
+        }
+      } catch (error) {
+        console.error('Register error:', error);
+        
+        const mockUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
+        const existing = mockUsers.find(u => u.username === username);
+        
+        if (existing) {
+          showToast('用户名已存在');
+          return;
+        }
+        
+        const newUser = {
+          id: mockUsers.length + 1,
+          username,
+          password,
+          role: 'user',
+          createdAt: new Date().toISOString()
+        };
+        mockUsers.push(newUser);
+        localStorage.setItem('mock_users', JSON.stringify(mockUsers));
+        
+        localStorage.setItem('token', 'mock_token_' + newUser.id);
+        localStorage.setItem('user_id', newUser.id);
+        localStorage.setItem('username', newUser.username);
+        localStorage.setItem('role', newUser.role);
+        
+        currentUser = newUser;
+        showToast('注册成功（模拟）');
+        enterApp();
+      }
+    }
+    
+    function enterApp() {
+      const user = getCurrentUser();
+      if (!user) return;
+      
+      currentUser = user;
+      
+      const avatar = document.getElementById('user-avatar');
+      const displayName = document.getElementById('user-display-name');
+      const roleDisplay = document.getElementById('user-role-display');
+      
+      avatar.textContent = user.username.charAt(0).toUpperCase();
+      displayName.textContent = user.username;
+      roleDisplay.textContent = user.role === 'admin' ? '系统管理员' : '项目成员';
+      
+      const navUsers = document.getElementById('nav-users');
+      if (user.role === 'admin') {
+        navUsers.classList.remove('hidden');
+      } else {
+        navUsers.classList.add('hidden');
+      }
+      
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('app-view').classList.remove('hidden');
+      updateLogs();
+      updateStats();
+      updateTaskbarTime();
+      setInterval(updateTaskbarTime, 60000);
+      
+      loadMockProjects();
+      loadMockUsers();
+    }
+    
     function handleLogout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
+      localStorage.removeItem('role');
+      
+      currentUser = null;
+      
       document.getElementById('login-view').classList.remove('hidden');
       document.getElementById('app-view').classList.add('hidden');
       document.getElementById('login-password').value = '';
+      document.getElementById('register-username').value = '';
+      document.getElementById('register-password').value = '';
+      document.getElementById('register-confirm').value = '';
+      
+      switchAuthTab('login');
     }
     
+    let currentPage = 'logs';
+    
     function switchPage(page) {
+      currentPage = page;
+      
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
       document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
       
       document.getElementById('page-logs').classList.toggle('hidden', page !== 'logs');
       document.getElementById('page-stats').classList.toggle('hidden', page !== 'stats');
+      document.getElementById('page-projects').classList.toggle('hidden', page !== 'projects');
+      document.getElementById('page-users').classList.toggle('hidden', page !== 'users');
       
       if (page === 'logs') updateLogs();
       if (page === 'stats') {
         currentStatsTab = 'workers';
         updateStatsView();
       }
+      if (page === 'projects') loadProjects();
+      if (page === 'users') loadUsers();
     }
     
     function updateLogs() {
@@ -1338,7 +1841,7 @@
               </div>
             </td>
             <td>
-              <button class="action-btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation(); showLogDetail(${originalIndex});">查看</button>
+              <button class="action-btn-secondary-sm" onclick="event.stopPropagation(); showLogDetail(${originalIndex});">查看</button>
             </td>
           </tr>
         `;
@@ -1389,7 +1892,6 @@
       document.getElementById('stat-total').textContent = total;
       document.getElementById('stat-week').textContent = weekCount;
       document.getElementById('stat-today').textContent = todayCount;
-      document.getElementById('stat-workers').textContent = todayWorkers;
     }
     
     let currentStatsTab = 'workers';
@@ -2108,6 +2610,507 @@
       const el = document.getElementById('taskbar-time');
       if (el) el.textContent = `${hours}:${minutes}`;
     }
+    
+    function loadMockProjects() {
+      const mockProjects = localStorage.getItem('mock_projects');
+      if (!mockProjects) {
+        projectsList = [
+          {
+            id: 1,
+            name: '市中心商业综合体',
+            description: '位于市中心核心地段，集购物、餐饮、娱乐于一体的大型商业综合体项目。总建筑面积约15万平方米。',
+            createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+            members: [1, 2]
+          },
+          {
+            id: 2,
+            name: '高新区办公楼',
+            description: '现代化甲级写字楼项目，采用绿色环保建筑理念，配备智能化办公系统。',
+            createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+            members: [1]
+          }
+        ];
+        localStorage.setItem('mock_projects', JSON.stringify(projectsList));
+      } else {
+        projectsList = JSON.parse(mockProjects);
+      }
+    }
+    
+    function loadMockUsers() {
+      const mockUsers = localStorage.getItem('mock_users');
+      if (!mockUsers) {
+        usersList = [
+          { id: 1, username: 'admin', password: 'admin123', role: 'admin', createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString() },
+          { id: 2, username: 'demo', password: '123456', role: 'user', createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString() }
+        ];
+        localStorage.setItem('mock_users', JSON.stringify(usersList));
+      } else {
+        usersList = JSON.parse(mockUsers);
+      }
+    }
+    
+    async function loadProjects() {
+      const container = document.getElementById('projects-content');
+      container.innerHTML = `<div class="loading"><div class="loading-spinner"></div><span>加载中...</span></div>`;
+      
+      try {
+        const projects = await apiRequest('/projects');
+        projectsList = projects;
+      } catch (error) {
+        console.error('Load projects error:', error);
+        loadMockProjects();
+      }
+      
+      renderProjects();
+    }
+    
+    function renderProjects() {
+      const container = document.getElementById('projects-content');
+      
+      if (projectsList.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🏢</div>
+            <div class="empty-state-text">暂无项目，点击上方按钮创建</div>
+          </div>
+        `;
+        return;
+      }
+      
+      const allUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
+      
+      let html = '';
+      projectsList.forEach(project => {
+        const memberUsers = allUsers.filter(u => project.members?.includes(u.id)) || [];
+        const memberNames = memberUsers.map(u => u.username).join('、') || '暂无成员';
+        
+        html += `
+          <div class="project-card">
+            <div class="project-header">
+              <div class="project-name">${project.name}</div>
+              <div style="display: flex; gap: 8px;">
+                <button class="action-btn-secondary-sm" onclick="showManageProjectMembersModal(${project.id})">👥 成员管理</button>
+                <button class="action-btn-danger-sm" onclick="confirmDeleteProject(${project.id})">🗑️ 删除</button>
+              </div>
+            </div>
+            <div class="project-desc">${project.description || '暂无描述'}</div>
+            <div class="project-meta">
+              <span>📅 创建时间：${new Date(project.createdAt).toLocaleDateString()}</span>
+              <span>👥 成员数：${project.members?.length || 0}</span>
+            </div>
+            <div class="project-members">
+              <span style="font-size: 13px; color: var(--text-tertiary);">成员：</span>
+              ${memberUsers.map(u => `<span class="tag tag-accent">${u.username}</span>`).join('') || '<span style="font-size: 13px; color: var(--text-tertiary);">暂无成员</span>'}
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    function showCreateProjectModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'create-project-modal';
+      
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 600px;">
+          <div class="modal-header">
+            <h2 class="modal-title">新建项目</h2>
+            <button class="modal-close" onclick="document.getElementById('create-project-modal').remove()">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">项目名称 <span class="required">*</span></label>
+              <input type="text" id="new-project-name" class="form-input" placeholder="请输入项目名称">
+            </div>
+            <div class="form-group">
+              <label class="form-label">项目描述</label>
+              <textarea id="new-project-desc" class="form-textarea" placeholder="请输入项目描述（可选）"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn-secondary" onclick="document.getElementById('create-project-modal').remove()">取消</button>
+            <button class="action-btn" onclick="createProject()">创建项目</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    }
+    
+    async function createProject() {
+      const name = document.getElementById('new-project-name').value.trim();
+      const description = document.getElementById('new-project-desc').value.trim();
+      
+      if (!name) {
+        showToast('请输入项目名称');
+        return;
+      }
+      
+      try {
+        const result = await apiRequest('/projects', {
+          method: 'POST',
+          body: JSON.stringify({ name, description })
+        });
+        projectsList.push(result);
+        localStorage.setItem('mock_projects', JSON.stringify(projectsList));
+      } catch (error) {
+        console.error('Create project error:', error);
+        const newProject = {
+          id: projectsList.length + 1,
+          name,
+          description,
+          createdAt: new Date().toISOString(),
+          members: [parseInt(localStorage.getItem('user_id'))]
+        };
+        projectsList.push(newProject);
+        localStorage.setItem('mock_projects', JSON.stringify(projectsList));
+      }
+      
+      document.getElementById('create-project-modal').remove();
+      showToast('项目创建成功');
+      renderProjects();
+    }
+    
+    function confirmDeleteProject(projectId) {
+      const project = projectsList.find(p => p.id === projectId);
+      if (!project) return;
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'confirm-delete-modal';
+      
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 450px;">
+          <div class="modal-header">
+            <h2 class="modal-title">确认删除</h2>
+            <button class="modal-close" onclick="document.getElementById('confirm-delete-modal').remove()">×</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size: 14px; line-height: 1.8; color: var(--text-secondary);">
+              确定要删除项目 <strong style="color: var(--text-primary);">${project.name}</strong> 吗？
+              <br><br>
+              <span style="color: #e53935;">此操作不可撤销，项目相关的所有数据将被永久删除。</span>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn-secondary" onclick="document.getElementById('confirm-delete-modal').remove()">取消</button>
+            <button class="action-btn-danger" onclick="deleteProject(${projectId})">确认删除</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    }
+    
+    async function deleteProject(projectId) {
+      try {
+        await apiRequest(`/projects/${projectId}`, {
+          method: 'DELETE'
+        });
+      } catch (error) {
+        console.error('Delete project error:', error);
+      }
+      
+      projectsList = projectsList.filter(p => p.id !== projectId);
+      localStorage.setItem('mock_projects', JSON.stringify(projectsList));
+      
+      document.getElementById('confirm-delete-modal').remove();
+      showToast('项目已删除');
+      renderProjects();
+    }
+    
+    function showManageProjectMembersModal(projectId) {
+      const project = projectsList.find(p => p.id === projectId);
+      if (!project) return;
+      
+      const allUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'manage-members-modal';
+      
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 500px;">
+          <div class="modal-header">
+            <h2 class="modal-title">项目成员管理 - ${project.name}</h2>
+            <button class="modal-close" onclick="document.getElementById('manage-members-modal').remove()">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-label" style="margin-bottom: 16px;">选择要添加到此项目的成员：</div>
+            <div class="checkbox-group" id="members-checkbox-group">
+              ${allUsers.map(user => `
+                <label class="checkbox-item">
+                  <input type="checkbox" id="member-${user.id}" value="${user.id}" ${project.members?.includes(user.id) ? 'checked' : ''}>
+                  <span class="checkbox-label">
+                    ${user.username}
+                    <span class="tag ${user.role === 'admin' ? 'tag-warning' : 'tag-accent'}" style="margin-left: 8px;">${user.role === 'admin' ? '管理员' : '用户'}</span>
+                  </span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn-secondary" onclick="document.getElementById('manage-members-modal').remove()">取消</button>
+            <button class="action-btn" onclick="saveProjectMembers(${projectId})">保存</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    }
+    
+    function saveProjectMembers(projectId) {
+      const checkboxes = document.querySelectorAll('#members-checkbox-group input[type="checkbox"]:checked');
+      const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+      
+      const project = projectsList.find(p => p.id === projectId);
+      if (project) {
+        project.members = selectedIds;
+        localStorage.setItem('mock_projects', JSON.stringify(projectsList));
+      }
+      
+      document.getElementById('manage-members-modal').remove();
+      showToast('成员已更新');
+      renderProjects();
+    }
+    
+    async function loadUsers() {
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = `<tr><td colspan="5"><div class="loading"><div class="loading-spinner"></div><span>加载中...</span></div></td></tr>`;
+      
+      try {
+        const users = await apiRequest('/users');
+        usersList = users;
+      } catch (error) {
+        console.error('Load users error:', error);
+        loadMockUsers();
+      }
+      
+      renderUsers();
+    }
+    
+    function renderUsers() {
+      const tbody = document.getElementById('users-tbody');
+      
+      if (usersList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-state-icon">👥</div>
+                <div class="empty-state-text">暂无用户</div>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      const projects = JSON.parse(localStorage.getItem('mock_projects') || '[]');
+      
+      let html = '';
+      usersList.forEach(user => {
+        const projectCount = projects.filter(p => p.members?.includes(user.id)).length;
+        const roleTag = user.role === 'admin' 
+          ? '<span class="tag tag-warning">管理员</span>'
+          : '<span class="tag tag-accent">普通用户</span>';
+        
+        html += `
+          <tr>
+            <td style="font-weight: 600;">${user.username}</td>
+            <td>${roleTag}</td>
+            <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+            <td>${projectCount} 个项目</td>
+            <td>
+              <div style="display: flex; gap: 8px;">
+                <button class="action-btn-secondary-sm" onclick="toggleUserRole(${user.id})">切换角色</button>
+                <button class="action-btn-danger-sm" onclick="confirmDeleteUser(${user.id})">删除</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tbody.innerHTML = html;
+    }
+    
+    function showCreateUserModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'create-user-modal';
+      
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 500px;">
+          <div class="modal-header">
+            <h2 class="modal-title">新建用户</h2>
+            <button class="modal-close" onclick="document.getElementById('create-user-modal').remove()">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">用户名 <span class="required">*</span></label>
+              <input type="text" id="new-user-username" class="form-input" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+              <label class="form-label">密码 <span class="required">*</span></label>
+              <input type="password" id="new-user-password" class="form-input" placeholder="请输入密码（至少6位）">
+            </div>
+            <div class="form-group">
+              <label class="form-label">角色</label>
+              <select id="new-user-role" class="form-select">
+                <option value="user">普通用户</option>
+                <option value="admin">管理员</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn-secondary" onclick="document.getElementById('create-user-modal').remove()">取消</button>
+            <button class="action-btn" onclick="createUser()">创建用户</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    }
+    
+    async function createUser() {
+      const username = document.getElementById('new-user-username').value.trim();
+      const password = document.getElementById('new-user-password').value;
+      const role = document.getElementById('new-user-role').value;
+      
+      if (!username || !password) {
+        showToast('请填写用户名和密码');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showToast('密码至少需要6位');
+        return;
+      }
+      
+      try {
+        const result = await apiRequest('/users', {
+          method: 'POST',
+          body: JSON.stringify({ username, password, role })
+        });
+        usersList.push(result);
+        localStorage.setItem('mock_users', JSON.stringify(usersList));
+      } catch (error) {
+        console.error('Create user error:', error);
+        
+        const existing = usersList.find(u => u.username === username);
+        if (existing) {
+          showToast('用户名已存在');
+          return;
+        }
+        
+        const newUser = {
+          id: usersList.length + 1,
+          username,
+          password,
+          role,
+          createdAt: new Date().toISOString()
+        };
+        usersList.push(newUser);
+        localStorage.setItem('mock_users', JSON.stringify(usersList));
+      }
+      
+      document.getElementById('create-user-modal').remove();
+      showToast('用户创建成功');
+      renderUsers();
+    }
+    
+    function confirmDeleteUser(userId) {
+      const user = usersList.find(u => u.id === userId);
+      if (!user) return;
+      
+      if (user.id === parseInt(localStorage.getItem('user_id'))) {
+        showToast('不能删除当前登录的用户');
+        return;
+      }
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'confirm-delete-user-modal';
+      
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 450px;">
+          <div class="modal-header">
+            <h2 class="modal-title">确认删除</h2>
+            <button class="modal-close" onclick="document.getElementById('confirm-delete-user-modal').remove()">×</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size: 14px; line-height: 1.8; color: var(--text-secondary);">
+              确定要删除用户 <strong style="color: var(--text-primary);">${user.username}</strong> 吗？
+              <br><br>
+              <span style="color: #e53935;">此操作不可撤销。</span>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn-secondary" onclick="document.getElementById('confirm-delete-user-modal').remove()">取消</button>
+            <button class="action-btn-danger" onclick="deleteUser(${userId})">确认删除</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    }
+    
+    async function deleteUser(userId) {
+      try {
+        await apiRequest(`/users/${userId}`, {
+          method: 'DELETE'
+        });
+      } catch (error) {
+        console.error('Delete user error:', error);
+      }
+      
+      usersList = usersList.filter(u => u.id !== userId);
+      localStorage.setItem('mock_users', JSON.stringify(usersList));
+      
+      document.getElementById('confirm-delete-user-modal').remove();
+      showToast('用户已删除');
+      renderUsers();
+    }
+    
+    async function toggleUserRole(userId) {
+      const user = usersList.find(u => u.id === userId);
+      if (!user) return;
+      
+      const newRole = user.role === 'admin' ? 'user' : 'admin';
+      
+      try {
+        const result = await apiRequest(`/users/${userId}/role`, {
+          method: 'PUT',
+          body: JSON.stringify({ role: newRole })
+        });
+        if (result) {
+          user.role = newRole;
+        }
+      } catch (error) {
+        console.error('Toggle role error:', error);
+        user.role = newRole;
+      }
+      
+      localStorage.setItem('mock_users', JSON.stringify(usersList));
+      showToast(`角色已更新为：${newRole === 'admin' ? '管理员' : '普通用户'}`);
+      renderUsers();
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const user = getCurrentUser();
+      if (user) {
+        currentUser = user;
+        enterApp();
+      }
+    });
   </script>
 </body>
 </html>

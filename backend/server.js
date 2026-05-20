@@ -5,9 +5,11 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcryptjs');
 
 const db = require('./db');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
 const projectRoutes = require('./routes/projects');
 const logRoutes = require('./routes/logs');
 const fileRoutes = require('./routes/files');
@@ -16,6 +18,25 @@ const { verifySocketToken } = require('./middleware/auth');
 async function main() {
   try {
     await db.initPromise;
+    
+    const adminUser = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
+    if (!adminUser) {
+      const adminHash = bcrypt.hashSync('admin123', 10);
+      db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+        .run('admin', adminHash, 'admin');
+      console.log('Default admin account created: admin / admin123');
+    }
+    
+    const demoUser = db.prepare('SELECT * FROM users WHERE username = ?').get('demo');
+    if (!demoUser) {
+      const demoHash = bcrypt.hashSync('123456', 10);
+      db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+        .run('demo', demoHash, 'user');
+      console.log('Demo user created: demo / 123456');
+    }
+    
+    db.saveDatabase();
+    
     startServer();
   } catch (err) {
     console.error('Database initialization failed:', err);
@@ -49,6 +70,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/files', fileRoutes);
@@ -122,7 +144,7 @@ app.use((err, req, res, next) => {
 });
 
 function startServer() {
-  const PORT = parseInt(process.env.PORT) || 3000;
+  const PORT = parseInt(process.env.PORT) || 8519;
   server.listen(PORT, () => {
     console.log(`
 ╔═══════════════════════════════════════════════════════════╗

@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>施工日志 - 安卓端预览</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      background: #fff;
+      border-radius: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    .notch {
+      height: 30px;
+      background: #000;
+      width: 150px;
+      margin: 0 auto;
+      border-radius: 0 0 20px 20px;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .app-content {
+      flex: 1;
+      background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+      overflow-y: auto;
+      position: relative;
+    }
+    
+    .status-bar {
+      height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 600;
+      background: #fff;
+    }
+    
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+    
+    .login-page {
+      padding: 60px 30px;
+      text-align: center;
+    }
+    
+    .app-logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+    
+    .app-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+    
+    .app-subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 40px;
+    }
+    
+    .input-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 15px;
+      background: #f8f9fa;
+      transition: all 0.3s;
+    }
+    
+    .input-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: #667eea;
+      font-weight: 500;
+    }
+    
+    .login-footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #999;
+    }
+    
+    .home-header {
+      background: #fff;
+      padding: 16px 20px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 600;
+      font-size: 18px;
+    }
+    
+    .user-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    
+    .user-info p {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+    
+    .project-selector {
+      background: #fff;
+      margin: 16px;
+      padding: 16px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      cursor: pointer;
+    }
+    
+    .project-selector:active {
+      background: #f8f9fa;
+    }
+    
+    .project-icon {
+      width: 40px;
+      height: 40px;
+      background: #eef2ff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    .project-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #1a1a1a;
+    }
+    
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 0 16px;
+      margin-bottom: 16px;
+    }
+    
+    .stat-item {
+      background: #fff;
+      padding: 16px 12px;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .stat-item:active {
+      transform: scale(0.95);
+    }
+    
+    .stat-item.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #667eea;
+    }
+    
+    .stat-item.active .stat-value {
+      color: #fff;
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+    }
+    
+    .stat-item.active .stat-label {
+      color: rgba(255,255,255,0.8);
+    }
+    
+    .log-list {
+      padding: 0 16px;
+      padding-bottom: 80px;
+    }
+    
+    .log-card {
+      background: #fff;
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      cursor: pointer;
+    }
+    
+    .log-card:active {
+      background: #f8f9fa;
+    }
+    
+    .log-date {
+      font-size: 13px;
+      color: #667eea;
+      font-weight: 600;
+    }
+    
+    .log-content {
+      font-size: 14px;
+      color: #333;
+      margin: 8px 0;
+      line-height: 1.5;
+      max-height: 42px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    
+    .log-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    
+    .tag {
+      background: #f0f2ff;
+      color: #667eea;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    .tab-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: #fff;
+      border-top: 1px solid #eee;
+      display: none;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 10px;
+    }
+    
+    .tab-bar.show {
+      display: flex;
+    }
+    
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #aaa;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 8px 16px;
+    }
+    
+    .tab-item:active {
+      opacity: 0.7;
+    }
+    
+    .tab-item.active {
+      color: #667eea;
+    }
+    
+    .tab-icon {
+      font-size: 22px;
+    }
+    
+    .fab {
+      position: absolute;
+      right: 20px;
+      bottom: 90px;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 300;
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .fab:active {
+      transform: scale(0.9);
+    }
+    
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      display: none;
+    }
+    
+    .toast.show {
+      display: block;
+    }
+    
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .login-time {
+      font-size: 11px;
+      color: #888;
+      background: #f5f5f5;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+    
+    .user-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: #fff;
+      width: 100%;
+      max-height: 80%;
+      border-radius: 20px 20px 0 0;
+      padding: 20px;
+      animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    
+    .modal-close {
+      font-size: 24px;
+      color: #999;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    
+    .project-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .project-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .project-item.selected {
+      background: #eef2ff;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #f8f9fa;
+    }
+    
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+    }
+    
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .weather-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: #667eea;
+      border: 1px solid #667eea;
+    }
+    
+    .stats-page {
+      padding: 16px;
+    }
+    
+    .stats-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    
+    .stats-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .stat-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+    
+    .stat-bar-name {
+      font-size: 13px;
+      color: #666;
+      width: 80px;
+      flex-shrink: 0;
+    }
+    
+    .stat-bar-bar {
+      flex: 1;
+      height: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .stat-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    .stat-bar-count {
+      font-size: 13px;
+      font-weight: 600;
+      color: #667eea;
+      width: 40px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    
+    .mine-section {
+      padding: 16px;
+    }
+    
+    .mine-menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    
+    .mine-menu-item:active {
+      background: #f8f9fa;
+    }
+    
+    .mine-menu-item.danger {
+      color: #dc3545;
+    }
+    
+    .mine-menu-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .mine-menu-icon {
+      font-size: 20px;
+      width: 28px;
+    }
+    
+    .mine-menu-text {
+      font-size: 14px;
+    }
+    
+    .mine-menu-arrow {
+      color: #ccc;
+      font-size: 18px;
+    }
+    
+    .section-title {
+      font-size: 13px;
+      color: #888;
+      margin: 16px 0 8px 4px;
+    }
+    
+    .admin-badge {
+      background: #ffd700;
+      color: #333;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 8px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+    }
+    
+    .empty-state-icon {
+      font-size: 60px;
+      margin-bottom: 16px;
+    }
+    
+    .empty-state-text {
+      font-size: 14px;
+    }
+    
+    .empty-state-hint {
+      font-size: 12px;
+      margin-top: 8px;
+      color: #aaa;
+    }
+    
+    .add-item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .add-item-row input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    
+    .add-item-row button {
+      padding: 10px 16px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    
+    .item-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eef2ff;
+      color: #667eea;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      margin: 4px;
+    }
+    
+    .item-tag-remove {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      color: #999;
+    }
+    
+    .item-tag-remove:hover {
+      color: #dc3545;
+    }
+    
+    .items-container {
+      margin: 8px 0;
+    }
+    
+    .add-item-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #667eea;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    
+    .log-detail-modal {
+      padding-bottom: 20px;
+    }
+    
+    .log-detail-section {
+      margin-bottom: 20px;
+    }
+    
+    .log-detail-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    
+    .log-detail-value {
+      font-size: 15px;
+      color: #333;
+      line-height: 1.5;
+    }
+    
+    .log-detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .admin-menu-group {
+      background: #fff3e0;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #e65100;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="notch"></div>
+    
+    <div class="app-content">
+      <div class="status-bar">
+        <span id="sb-time">9:41</span>
+        <span>🔊 🔋</span>
+      </div>
+      
+      <div id="page-login" class="page active login-page">
+        <div class="app-logo">🏗️</div>
+        <h1 class="app-title">施工日志</h1>
+        <p class="app-subtitle">Construction Log System</p>
+        
+        <div class="input-group">
+          <label>用户名</label>
+          <input type="text" id="login-username" placeholder="请输入用户名" value="demo">
+        </div>
+        
+        <div class="input-group">
+          <label>密码</label>
+          <input type="password" id="login-password" placeholder="请输入密码" value="123456">
+        </div>
+        
+        <button class="btn btn-primary" onclick="handleLogin()">
+          登 录
+        </button>
+        
+        <button class="btn btn-secondary" onclick="showPage('page-register')">
+          还没有账号？立即注册
+        </button>
+        
+        <div class="login-footer">
+          测试账号: demo / 123456<br>
+          管理员: admin / admin123
+        </div>
+      </div>
+      
+      <div id="page-register" class="page login-page">
+        <div class="app-logo">📝</div>
+        <h1 class="app-title">注册账号</h1>
+        <p class="app-subtitle">创建您的施工日志账户</p>
+        
+        <div class="input-group">
+          <label>用户名</label>
+          <input type="text" id="reg-username" placeholder="请输入用户名">
+        </div>
+        
+        <div class="input-group">
+          <label>密码</label>
+          <input type="password" id="reg-password" placeholder="请输入密码（至少6位）">
+        </div>
+        
+        <div class="input-group">
+          <label>确认密码</label>
+          <input type="password" id="reg-confirm" placeholder="请再次输入密码">
+        </div>
+        
+        <button class="btn btn-primary" onclick="handleRegister()">
+          注 册
+        </button>
+        
+        <button class="btn btn-secondary" onclick="showPage('page-login')">
+          已有账号？立即登录
+        </button>
+      </div>
+      
+      <div id="page-home" class="page">
+        <div class="home-header">
+          <div class="header-row">
+            <div class="user-row">
+              <div class="user-avatar" id="user-avatar">D</div>
+              <div class="user-info">
+                <h3 id="user-name">Demo User</h3>
+                <p id="user-role">项目成员</p>
+              </div>
+            </div>
+            <div class="login-time" id="login-time">登录时间: --</div>
+          </div>
+        </div>
+        
+        <div class="project-selector" onclick="showProjectSelector()">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="project-icon">🏗️</div>
+            <div>
+              <div class="project-name" id="current-project">请选择项目</div>
+              <div style="font-size: 11px; color: #999;">点击切换项目</div>
+            </div>
+          </div>
+          <span style="color: #ccc; font-size: 20px;">›</span>
+        </div>
+        
+        <div class="stats-row">
+          <div class="stat-item active" data-filter="all" onclick="setFilter('all', this)">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">总日志</div>
+          </div>
+          <div class="stat-item" data-filter="week" onclick="setFilter('week', this)">
+            <div class="stat-value" id="stat-week">0</div>
+            <div class="stat-label">本周</div>
+          </div>
+          <div class="stat-item" data-filter="today" onclick="setFilter('today', this)">
+            <div class="stat-value" id="stat-today">0</div>
+            <div class="stat-label">今日</div>
+          </div>
+        </div>
+        
+        <div class="log-list" id="log-list">
+        </div>
+        
+        <div class="fab" onclick="showAddLogModal()">+</div>
+      </div>
+      
+      <div id="page-stats" class="page">
+        <div class="home-header">
+          <h3 style="font-size: 18px; font-weight: 600;">数据统计</h3>
+          <p style="font-size: 12px; color: #888; margin-top: 4px;">人员、材料、机械统计</p>
+        </div>
+        
+        <div class="stats-page" id="stats-content">
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-text">请先选择项目并添加日志</div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="page-mine" class="page">
+        <div class="home-header">
+          <h3 style="font-size: 18px; font-weight: 600;">我的</h3>
+        </div>
+        
+        <div class="mine-section">
+          <div class="project-selector" style="margin: 0;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="user-avatar" id="mine-avatar">D</div>
+              <div class="user-info">
+                <div style="display: flex; align-items: center;">
+                  <h3 id="mine-name">Demo User</h3>
+                  <span id="admin-badge" class="admin-badge" style="display: none;">管理员</span>
+                </div>
+                <p id="mine-role">项目成员</p>
+              </div>
+            </div>
+          </div>
+          
+          <div id="admin-menu-section" style="display: none;">
+            <div class="section-title">管理员功能</div>
+            <div class="mine-menu-item" onclick="showUserManagement()">
+              <div class="mine-menu-left">
+                <span class="mine-menu-icon">👥</span>
+                <span class="mine-menu-text">用户管理</span>
+              </div>
+              <span class="mine-menu-arrow">›</span>
+            </div>
+            <div class="mine-menu-item" onclick="showProjectManagement()">
+              <div class="mine-menu-left">
+                <span class="mine-menu-icon">📋</span>
+                <span class="mine-menu-text">项目管理</span>
+              </div>
+              <span class="mine-menu-arrow">›</span>
+            </div>
+          </div>
+          
+          <div class="section-title">常用功能</div>
+          <div class="mine-menu-item" onclick="showChangePassword()">
+            <div class="mine-menu-left">
+              <span class="mine-menu-icon">🔐</span>
+              <span class="mine-menu-text">修改密码</span>
+            </div>
+            <span class="mine-menu-arrow">›</span>
+          </div>
+          <div class="mine-menu-item" onclick="showDeviceManagement()">
+            <div class="mine-menu-left">
+              <span class="mine-menu-icon">📱</span>
+              <span class="mine-menu-text">设备管理</span>
+            </div>
+            <span class="mine-menu-arrow">›</span>
+          </div>
+          <div class="mine-menu-item" onclick="showHelpCenter()">
+            <div class="mine-menu-left">
+              <span class="mine-menu-icon">❓</span>
+              <span class="mine-menu-text">帮助中心</span>
+            </div>
+            <span class="mine-menu-arrow">›</span>
+          </div>
+          
+          <div class="section-title">其他</div>
+          <div class="mine-menu-item danger" onclick="handleLogout()">
+            <div class="mine-menu-left">
+              <span class="mine-menu-icon">🚪</span>
+              <span class="mine-menu-text">退出登录</span>
+            </div>
+            <span class="mine-menu-arrow">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tab-bar" id="tab-bar">
+      <div class="tab-item active" data-tab="home" onclick="switchTab('home', this)">
+        <span class="tab-icon">🏠</span>
+        <span>首页</span>
+      </div>
+      <div class="tab-item" data-tab="stats" onclick="switchTab('stats', this)">
+        <span class="tab-icon">📊</span>
+        <span>统计</span>
+      </div>
+      <div class="tab-item" data-tab="mine" onclick="switchTab('mine', this)">
+        <span class="tab-icon">👤</span>
+        <span>我的</span>
+      </div>
+    </div>
+  </div>
+  
+  <div id="project-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">选择项目</span>
+        <span class="modal-close" onclick="closeModal('project-modal')">×</span>
+      </div>
+      <div id="project-list"></div>
+      <div class="action-buttons">
+        <button class="btn btn-outline" onclick="showCreateProjectModal()">➕ 新建项目</button>
+        <button class="btn btn-primary" onclick="closeModal('project-modal')">取消</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="create-project-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">新建项目</span>
+        <span class="modal-close" onclick="closeModal('create-project-modal')">×</span>
+      </div>
+      <div class="form-group">
+        <label>项目名称</label>
+        <input type="text" id="new-project-name" placeholder="请输入项目名称">
+      </div>
+      <div class="form-group">
+        <label>项目描述</label>
+        <textarea id="new-project-desc" placeholder="请输入项目描述（可选）"></textarea>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-outline" onclick="closeModal('create-project-modal')">取消</button>
+        <button class="btn btn-primary" onclick="handleCreateProject()">创建</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="add-log-modal" class="modal">
+    <div class="modal-content" style="max-height: 90%; overflow-y: auto;">
+      <div class="modal-header">
+        <span class="modal-title">新建日志</span>
+        <span class="modal-close" onclick="closeModal('add-log-modal')">×</span>
+      </div>
+      <div class="form-group">
+        <label>天气</label>
+        <div class="weather-row">
+          <select id="log-weather">
+            <option value="晴">☀️ 晴</option>
+            <option value="多云">⛅ 多云</option>
+            <option value="阴">☁️ 阴</option>
+            <option value="小雨">🌧️ 小雨</option>
+            <option value="中雨">🌧️ 中雨</option>
+            <option value="大雨">🌧️ 大雨</option>
+            <option value="雪">❄️ 雪</option>
+            <option value="雾">🌫️ 雾</option>
+          </select>
+          <input type="number" id="log-temperature" placeholder="温度 (°C)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>施工内容</label>
+        <textarea id="log-content" placeholder="请输入今日施工内容..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>施工人员</label>
+        <div class="items-container" id="workers-container"></div>
+        <div class="add-item-btn" onclick="showAddWorkerInput()">➕ 添加人员</div>
+        <div id="add-worker-input" class="add-item-row" style="display: none;">
+          <input type="text" id="worker-name" placeholder="姓名">
+          <input type="number" id="worker-count" placeholder="人数" value="1" style="width: 80px;">
+          <button onclick="addWorker()">添加</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>使用材料</label>
+        <div class="items-container" id="materials-container"></div>
+        <div class="add-item-btn" onclick="showAddMaterialInput()">➕ 添加材料</div>
+        <div id="add-material-input" class="add-item-row" style="display: none;">
+          <input type="text" id="material-name" placeholder="材料名称">
+          <input type="number" id="material-count" placeholder="数量" value="1" style="width: 80px;">
+          <button onclick="addMaterial()">添加</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>使用机械</label>
+        <div class="items-container" id="equipment-container"></div>
+        <div class="add-item-btn" onclick="showAddEquipmentInput()">➕ 添加机械</div>
+        <div id="add-equipment-input" class="add-item-row" style="display: none;">
+          <input type="text" id="equipment-name" placeholder="机械名称">
+          <input type="number" id="equipment-count" placeholder="数量" value="1" style="width: 80px;">
+          <button onclick="addEquipment()">添加</button>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-outline" onclick="closeModal('add-log-modal')">取消</button>
+        <button class="btn btn-primary" onclick="handleSaveLog()">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="log-detail-modal" class="modal">
+    <div class="modal-content log-detail-modal" style="max-height: 85%; overflow-y: auto;">
+      <div class="modal-header">
+        <span class="modal-title">日志详情</span>
+        <span class="modal-close" onclick="closeModal('log-detail-modal')">×</span>
+      </div>
+      <div id="log-detail-content"></div>
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="closeModal('log-detail-modal')">关闭</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="change-password-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">修改密码</span>
+        <span class="modal-close" onclick="closeModal('change-password-modal')">×</span>
+      </div>
+      <div class="form-group">
+        <label>当前密码</label>
+        <input type="password" id="current-password" placeholder="请输入当前密码">
+      </div>
+      <div class="form-group">
+        <label>新密码</label>
+        <input type="password" id="new-password" placeholder="请输入新密码（至少6位）">
+      </div>
+      <div class="form-group">
+        <label>确认新密码</label>
+        <input type="password" id="confirm-new-password" placeholder="请再次输入新密码">
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-outline" onclick="closeModal('change-password-modal')">取消</button>
+        <button class="btn btn-primary" onclick="handleChangePassword()">确认修改</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="device-management-modal" class="modal">
+    <div class="modal-content" style="max-height: 85%; overflow-y: auto;">
+      <div class="modal-header">
+        <span class="modal-title">设备管理</span>
+        <span class="modal-close" onclick="closeModal('device-management-modal')">×</span>
+      </div>
+      <div id="device-list"></div>
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="closeModal('device-management-modal')">关闭</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="user-management-modal" class="modal">
+    <div class="modal-content" style="max-height: 85%; overflow-y: auto;">
+      <div class="modal-header">
+        <span class="modal-title">用户管理</span>
+        <span class="modal-close" onclick="closeModal('user-management-modal')">×</span>
+      </div>
+      <div id="user-list"></div>
+      <div class="action-buttons">
+        <button class="btn btn-outline" onclick="showCreateUser()">➕ 新建用户</button>
+        <button class="btn btn-primary" onclick="closeModal('user-management-modal')">关闭</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="create-user-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">新建用户</span>
+        <span class="modal-close" onclick="closeModal('create-user-modal')">×</span>
+      </div>
+      <div class="form-group">
+        <label>用户名</label>
+        <input type="text" id="create-user-name" placeholder="请输入用户名">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="create-user-password" placeholder="请输入密码（至少6位）">
+      </div>
+      <div class="form-group">
+        <label>角色</label>
+        <select id="create-user-role">
+          <option value="user">普通用户</option>
+          <option value="admin">管理员</option>
+        </select>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-outline" onclick="closeModal('create-user-modal')">取消</button>
+        <button class="btn btn-primary" onclick="handleCreateUser()">创建</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="project-management-modal" class="modal">
+    <div class="modal-content" style="max-height: 85%; overflow-y: auto;">
+      <div class="modal-header">
+        <span class="modal-title">项目管理</span>
+        <span class="modal-close" onclick="closeModal('project-management-modal')">×</span>
+      </div>
+      <div id="admin-project-list"></div>
+      <div class="action-buttons">
+        <button class="btn btn-outline" onclick="showCreateProjectModal()">➕ 新建项目</button>
+        <button class="btn btn-primary" onclick="closeModal('project-management-modal')">关闭</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="help-center-modal" class="modal">
+    <div class="modal-content" style="max-height: 85%; overflow-y: auto;">
+      <div class="modal-header">
+        <span class="modal-title">帮助中心</span>
+        <span class="modal-close" onclick="closeModal('help-center-modal')">×</span>
+      </div>
+      <div style="line-height: 1.8;">
+        <div class="log-detail-section">
+          <div class="log-detail-label">📱 关于应用</div>
+          <div class="log-detail-value">施工日志系统 v1.1.0<br>一个简洁、高效的施工日志管理工具</div>
+        </div>
+        <div class="log-detail-section">
+          <div class="log-detail-label">🎯 主要功能</div>
+          <div class="log-detail-value">
+            • 项目管理：创建和管理多个项目<br>
+            • 日志记录：记录每日施工内容<br>
+            • 人员管理：记录施工人员信息<br>
+            • 数据统计：人员、材料、机械统计
+          </div>
+        </div>
+        <div class="log-detail-section">
+          <div class="log-detail-label">🔑 测试账号</div>
+          <div class="log-detail-value">
+            • 普通用户：demo / 123456<br>
+            • 管理员：admin / admin123
+          </div>
+        </div>
+        <div class="log-detail-section">
+          <div class="log-detail-label">📞 联系支持</div>
+          <div class="log-detail-value">如有问题，请联系系统管理员</div>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="closeModal('help-center-modal')">我知道了</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="toast" class="toast">提示信息</div>
+
+  <script>
+    const API_BASE = 'http://localhost:8519/api';
+    
+    let currentUser = null;
+    let currentProject = null;
+    let currentFilter = 'all';
+    let logs = [];
+    let projects = [];
+    
+    let newWorkers = [];
+    let newMaterials = [];
+    let newEquipment = [];
+    
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+    
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    }
+    
+    function showModal(modalId) {
+      document.getElementById(modalId).classList.add('show');
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+    }
+    
+    function formatTime(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    function formatLogDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('zh-CN', {
+        month: 'long',
+        day: 'numeric'
+      }) + ' ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    async function apiRequest(url, options = {}) {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      try {
+        const response = await fetch(`${API_BASE}${url}`, {
+          ...options,
+          headers
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.error || '请求失败');
+        }
+        return response.json();
+      } catch (error) {
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('无法连接服务器，请检查后端服务');
+        }
+        throw error;
+      }
+    }
+    
+    async function handleLogin() {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      
+      if (!username || !password) {
+        showToast('请输入用户名和密码');
+        return;
+      }
+      
+      showToast('登录中...');
+      
+      try {
+        const result = await apiRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username, password, device_name: 'Preview Browser' })
+        });
+        
+        if (result.token) {
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('user_id', result.user_id);
+          localStorage.setItem('username', result.username);
+          localStorage.setItem('role', result.role);
+          localStorage.setItem('login_time', new Date().toISOString());
+          
+          showToast('登录成功');
+          enterApp();
+        }
+      } catch (error) {
+        showToast(error.message || '登录失败');
+      }
+    }
+    
+    async function handleRegister() {
+      const username = document.getElementById('reg-username').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm = document.getElementById('reg-confirm').value;
+      
+      if (!username || !password || !confirm) {
+        showToast('请填写所有必填项');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showToast('密码至少需要6位');
+        return;
+      }
+      
+      if (password !== confirm) {
+        showToast('两次输入的密码不一致');
+        return;
+      }
+      
+      showToast('注册中...');
+      
+      try {
+        const result = await apiRequest('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (result.token) {
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('user_id', result.user.id);
+          localStorage.setItem('username', result.user.username);
+          localStorage.setItem('role', result.user.role);
+          localStorage.setItem('login_time', new Date().toISOString());
+          
+          showToast('注册成功');
+          enterApp();
+        }
+      } catch (error) {
+        showToast(error.message || '注册失败');
+      }
+    }
+    
+    function enterApp() {
+      const username = localStorage.getItem('username') || 'User';
+      const role = localStorage.getItem('role') || 'user';
+      const loginTime = localStorage.getItem('login_time');
+      
+      currentUser = { username, role };
+      
+      const firstChar = username.charAt(0).toUpperCase();
+      document.getElementById('user-avatar').textContent = firstChar;
+      document.getElementById('mine-avatar').textContent = firstChar;
+      document.getElementById('user-name').textContent = username;
+      document.getElementById('mine-name').textContent = username;
+      document.getElementById('user-role').textContent = role === 'admin' ? '系统管理员' : '项目成员';
+      document.getElementById('mine-role').textContent = role === 'admin' ? '系统管理员' : '项目成员';
+      
+      if (role === 'admin') {
+        document.getElementById('admin-badge').style.display = 'inline';
+        document.getElementById('admin-menu-section').style.display = 'block';
+      }
+      
+      if (loginTime) {
+        document.getElementById('login-time').textContent = '登录时间: ' + formatTime(loginTime);
+      }
+      
+      document.getElementById('page-login').classList.remove('active');
+      document.getElementById('page-register').classList.remove('active');
+      document.getElementById('page-home').classList.add('active');
+      document.getElementById('tab-bar').classList.add('show');
+      
+      loadProjects();
+    }
+    
+    function handleLogout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
+      localStorage.removeItem('role');
+      localStorage.removeItem('login_time');
+      localStorage.removeItem('current_project');
+      
+      currentUser = null;
+      currentProject = null;
+      logs = [];
+      projects = [];
+      
+      document.getElementById('tab-bar').classList.remove('show');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-login').classList.add('active');
+      
+      showToast('已退出登录');
+    }
+    
+    function switchTab(tab, element) {
+      document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+      if (element) {
+        element.classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-item').forEach(item => {
+          if (item.dataset.tab === tab) {
+            item.classList.add('active');
+          }
+        });
+      }
+      
+      document.querySelectorAll('#page-home, #page-stats, #page-mine').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + tab).classList.add('active');
+      
+      if (tab === 'home') {
+        loadProjects();
+      } else if (tab === 'stats') {
+        loadStats();
+      }
+    }
+    
+    async function loadProjects() {
+      try {
+        projects = await apiRequest('/projects');
+        
+        const stored = localStorage.getItem('current_project');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const found = projects.find(p => p.id === parsed.id);
+          if (found) {
+            currentProject = found;
+            document.getElementById('current-project').textContent = found.name;
+            loadLogs();
+            return;
+          }
+        }
+        
+        if (projects.length > 0) {
+          currentProject = projects[0];
+          document.getElementById('current-project').textContent = projects[0].name;
+          localStorage.setItem('current_project', JSON.stringify({ id: projects[0].id, name: projects[0].name }));
+          loadLogs();
+        } else {
+          document.getElementById('log-list').innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <div class="empty-state-text">暂无项目</div>
+              <div class="empty-state-hint">请先创建项目</div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Load projects failed:', error);
+        document.getElementById('log-list').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🔌</div>
+            <div class="empty-state-text">无法连接到服务器</div>
+            <div class="empty-state-hint">请确保后端服务运行在 http://localhost:8519</div>
+          </div>
+        `;
+      }
+    }
+    
+    function showProjectSelector() {
+      const list = document.getElementById('project-list');
+      list.innerHTML = '';
+      
+      if (projects.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state" style="padding: 40px;">
+            <div class="empty-state-icon" style="font-size: 40px;">📋</div>
+            <div class="empty-state-text">暂无项目</div>
+            <div class="empty-state-hint">点击下方按钮创建项目</div>
+          </div>
+        `;
+      } else {
+        projects.forEach(project => {
+          const isSelected = currentProject && currentProject.id === project.id;
+          list.innerHTML += `
+            <div class="project-item ${isSelected ? 'selected' : ''}" onclick="selectProject(${project.id}, '${project.name}')">
+              <div class="project-icon">🏗️</div>
+              <div>
+                <div style="font-weight: 600; color: #1a1a1a;">${project.name}</div>
+                <div style="font-size: 12px; color: #888; margin-top: 2px;">${project.description || '暂无描述'}</div>
+              </div>
+              ${isSelected ? '<span style="color: #667eea; font-weight: bold;">✓</span>' : ''}
+            </div>
+          `;
+        });
+      }
+      
+      showModal('project-modal');
+    }
+    
+    function selectProject(id, name) {
+      const project = projects.find(p => p.id === id);
+      if (project) {
+        currentProject = project;
+        document.getElementById('current-project').textContent = name;
+        localStorage.setItem('current_project', JSON.stringify({ id, name }));
+        closeModal('project-modal');
+        loadLogs();
+      }
+    }
+    
+    function showCreateProjectModal() {
+      closeModal('project-modal');
+      document.getElementById('new-project-name').value = '';
+      document.getElementById('new-project-desc').value = '';
+      showModal('create-project-modal');
+    }
+    
+    async function handleCreateProject() {
+      const name = document.getElementById('new-project-name').value.trim();
+      const desc = document.getElementById('new-project-desc').value.trim();
+      
+      if (!name) {
+        showToast('请输入项目名称');
+        return;
+      }
+      
+      try {
+        const result = await apiRequest('/projects', {
+          method: 'POST',
+          body: JSON.stringify({ name, description: desc })
+        });
+        
+        if (result.id) {
+          showToast('项目创建成功');
+          closeModal('create-project-modal');
+          await loadProjects();
+        }
+      } catch (error) {
+        showToast(error.message || '创建项目失败');
+      }
+    }
+    
+    function setFilter(filter, element) {
+      currentFilter = filter;
+      document.querySelectorAll('.stat-item').forEach(item => item.classList.remove('active'));
+      if (element) {
+        element.classList.add('active');
+      }
+      renderLogs();
+    }
+    
+    async function loadLogs() {
+      if (!currentProject) return;
+      
+      try {
+        const response = await apiRequest(`/logs/${currentProject.id}?page=1&limit=50`);
+        logs = response.logs || [];
+        
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekStart = new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000);
+        
+        const todayCount = logs.filter(log => new Date(log.created_at) >= todayStart).length;
+        const weekCount = logs.filter(log => new Date(log.created_at) >= weekStart).length;
+        
+        document.getElementById('stat-total').textContent = logs.length;
+        document.getElementById('stat-week').textContent = weekCount;
+        document.getElementById('stat-today').textContent = todayCount;
+        
+        renderLogs();
+      } catch (error) {
+        console.error('Load logs failed:', error);
+        logs = [];
+        renderLogs();
+      }
+    }
+    
+    function renderLogs() {
+      const list = document.getElementById('log-list');
+      
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekStart = new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000);
+      
+      let filteredLogs = logs;
+      if (currentFilter === 'today') {
+        filteredLogs = logs.filter(log => new Date(log.created_at) >= todayStart);
+      } else if (currentFilter === 'week') {
+        filteredLogs = logs.filter(log => new Date(log.created_at) >= weekStart);
+      }
+      
+      if (filteredLogs.length === 0) {
+        const emptyText = currentFilter === 'today' ? '今日暂无日志' : 
+                          currentFilter === 'week' ? '本周暂无日志' : '暂无施工日志';
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <div class="empty-state-text">${emptyText}</div>
+            <div class="empty-state-hint">点击右下角按钮新增日志</div>
+          </div>
+        `;
+        return;
+      }
+      
+      list.innerHTML = filteredLogs.map(log => {
+        const workersHtml = (log.workers || []).slice(0, 3).map(w => 
+          `<span class="tag">${w.name} ×${w.count}</span>`
+        ).join('');
+        
+        return `
+          <div class="log-card" onclick="showLogDetail(${log.id})">
+            <div class="log-date">${formatLogDate(log.created_at)}</div>
+            <div class="log-content">${log.content || '暂无内容'}</div>
+            <div class="log-tags">
+              <span class="tag">${log.weather || '未知'} ${log.temperature || ''}°C</span>
+              ${workersHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function showLogDetail(logId) {
+      const log = logs.find(l => l.id === logId);
+      if (!log) return;
+      
+      const workers = (log.workers || []).map(w => `<span class="tag">${w.name} ×${w.count}</span>`).join('');
+      const materials = (log.materials || []).map(m => `<span class="tag">${m.name} ×${m.count}</span>`).join('');
+      const equipment = (log.equipment || []).map(e => `<span class="tag">${e.name} ×${e.count}</span>`).join('');
+      
+      document.getElementById('log-detail-content').innerHTML = `
+        <div class="log-detail-section">
+          <div class="log-detail-label">创建时间</div>
+          <div class="log-detail-value">${formatLogDate(log.created_at)}</div>
+        </div>
+        <div class="log-detail-section">
+          <div class="log-detail-label">天气</div>
+          <div class="log-detail-meta">
+            <span class="tag">${log.weather || '未知'}</span>
+            <span class="tag">${log.temperature || '--'}°C</span>
+          </div>
+        </div>
+        <div class="log-detail-section">
+          <div class="log-detail-label">施工内容</div>
+          <div class="log-detail-value" style="white-space: pre-wrap;">${log.content || '暂无内容'}</div>
+        </div>
+        ${workers ? `
+        <div class="log-detail-section">
+          <div class="log-detail-label">施工人员</div>
+          <div class="log-detail-meta">${workers}</div>
+        </div>` : ''}
+        ${materials ? `
+        <div class="log-detail-section">
+          <div class="log-detail-label">使用材料</div>
+          <div class="log-detail-meta">${materials}</div>
+        </div>` : ''}
+        ${equipment ? `
+        <div class="log-detail-section">
+          <div class="log-detail-label">使用机械</div>
+          <div class="log-detail-meta">${equipment}</div>
+        </div>` : ''}
+      `;
+      
+      showModal('log-detail-modal');
+    }
+    
+    function showAddLogModal() {
+      if (!currentProject) {
+        showToast('请先选择项目');
+        showProjectSelector();
+        return;
+      }
+      
+      document.getElementById('log-weather').value = '晴';
+      document.getElementById('log-temperature').value = '';
+      document.getElementById('log-content').value = '';
+      
+      newWorkers = [];
+      newMaterials = [];
+      newEquipment = [];
+      
+      renderNewWorkers();
+      renderNewMaterials();
+      renderNewEquipment();
+      
+      document.getElementById('add-worker-input').style.display = 'none';
+      document.getElementById('add-material-input').style.display = 'none';
+      document.getElementById('add-equipment-input').style.display = 'none';
+      
+      showModal('add-log-modal');
+    }
+    
+    function showAddWorkerInput() {
+      document.getElementById('add-worker-input').style.display = 'flex';
+    }
+    
+    function addWorker() {
+      const name = document.getElementById('worker-name').value.trim();
+      const count = parseInt(document.getElementById('worker-count').value) || 1;
+      
+      if (!name) {
+        showToast('请输入姓名');
+        return;
+      }
+      
+      newWorkers.push({ name, count });
+      document.getElementById('worker-name').value = '';
+      document.getElementById('worker-count').value = 1;
+      document.getElementById('add-worker-input').style.display = 'none';
+      renderNewWorkers();
+    }
+    
+    function renderNewWorkers() {
+      const container = document.getElementById('workers-container');
+      if (newWorkers.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = newWorkers.map((w, i) => `
+        <span class="item-tag">${w.name} ×${w.count} <span class="item-tag-remove" onclick="removeWorker(${i})">×</span></span>
+      `).join('');
+    }
+    
+    function removeWorker(index) {
+      newWorkers.splice(index, 1);
+      renderNewWorkers();
+    }
+    
+    function showAddMaterialInput() {
+      document.getElementById('add-material-input').style.display = 'flex';
+    }
+    
+    function addMaterial() {
+      const name = document.getElementById('material-name').value.trim();
+      const count = parseInt(document.getElementById('material-count').value) || 1;
+      
+      if (!name) {
+        showToast('请输入材料名称');
+        return;
+      }
+      
+      newMaterials.push({ name, count });
+      document.getElementById('material-name').value = '';
+      document.getElementById('material-count').value = 1;
+      document.getElementById('add-material-input').style.display = 'none';
+      renderNewMaterials();
+    }
+    
+    function renderNewMaterials() {
+      const container = document.getElementById('materials-container');
+      if (newMaterials.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = newMaterials.map((m, i) => `
+        <span class="item-tag">${m.name} ×${m.count} <span class="item-tag-remove" onclick="removeMaterial(${i})">×</span></span>
+      `).join('');
+    }
+    
+    function removeMaterial(index) {
+      newMaterials.splice(index, 1);
+      renderNewMaterials();
+    }
+    
+    function showAddEquipmentInput() {
+      document.getElementById('add-equipment-input').style.display = 'flex';
+    }
+    
+    function addEquipment() {
+      const name = document.getElementById('equipment-name').value.trim();
+      const count = parseInt(document.getElementById('equipment-count').value) || 1;
+      
+      if (!name) {
+        showToast('请输入机械名称');
+        return;
+      }
+      
+      newEquipment.push({ name, count });
+      document.getElementById('equipment-name').value = '';
+      document.getElementById('equipment-count').value = 1;
+      document.getElementById('add-equipment-input').style.display = 'none';
+      renderNewEquipment();
+    }
+    
+    function renderNewEquipment() {
+      const container = document.getElementById('equipment-container');
+      if (newEquipment.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = newEquipment.map((e, i) => `
+        <span class="item-tag">${e.name} ×${e.count} <span class="item-tag-remove" onclick="removeEquipment(${i})">×</span></span>
+      `).join('');
+    }
+    
+    function removeEquipment(index) {
+      newEquipment.splice(index, 1);
+      renderNewEquipment();
+    }
+    
+    async function handleSaveLog() {
+      if (!currentProject) {
+        showToast('请先选择项目');
+        return;
+      }
+      
+      const weather = document.getElementById('log-weather').value;
+      const temperature = document.getElementById('log-temperature').value;
+      const content = document.getElementById('log-content').value.trim();
+      
+      if (!content) {
+        showToast('请输入施工内容');
+        return;
+      }
+      
+      showToast('保存中...');
+      
+      try {
+        const result = await apiRequest(`/logs/${currentProject.id}`, {
+          method: 'POST',
+          body: JSON.stringify({
+            weather,
+            temperature: temperature ? parseFloat(temperature) : null,
+            content,
+            workers: newWorkers,
+            materials: newMaterials,
+            equipment: newEquipment
+          })
+        });
+        
+        showToast('日志保存成功');
+        closeModal('add-log-modal');
+        await loadLogs();
+      } catch (error) {
+        showToast(error.message || '保存失败');
+      }
+    }
+    
+    function loadStats() {
+      const container = document.getElementById('stats-content');
+      
+      if (!currentProject || logs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-text">暂无统计数据</div>
+            <div class="empty-state-hint">请先添加施工日志</div>
+          </div>
+        `;
+        return;
+      }
+      
+      const workerStats = {};
+      const materialStats = {};
+      const equipmentStats = {};
+      
+      logs.forEach(log => {
+        (log.workers || []).forEach(w => {
+          workerStats[w.name] = (workerStats[w.name] || 0) + w.count;
+        });
+        (log.materials || []).forEach(m => {
+          materialStats[m.name] = (materialStats[m.name] || 0) + m.count;
+        });
+        (log.equipment || []).forEach(e => {
+          equipmentStats[e.name] = (equipmentStats[e.name] || 0) + e.count;
+        });
+      });
+      
+      const workerList = Object.entries(workerStats).sort((a, b) => b[1] - a[1]);
+      const materialList = Object.entries(materialStats).sort((a, b) => b[1] - a[1]);
+      const equipmentList = Object.entries(equipmentStats).sort((a, b) => b[1] - a[1]);
+      
+      const maxWorker = workerList.length > 0 ? workerList[0][1] : 1;
+      const maxMaterial = materialList.length > 0 ? materialList[0][1] : 1;
+      const maxEquipment = equipmentList.length > 0 ? equipmentList[0][1] : 1;
+      
+      container.innerHTML = `
+        <div class="stats-card">
+          <div class="stats-card-title">👷 人员统计 (${logs.length} 条日志)</div>
+          ${workerList.length > 0 ? workerList.map(([name, count]) => `
+            <div class="stat-bar">
+              <span class="stat-bar-name">${name}</span>
+              <div class="stat-bar-bar">
+                <div class="stat-bar-fill" style="width: ${(count / maxWorker) * 100}%"></div>
+              </div>
+              <span class="stat-bar-count">${count}</span>
+            </div>
+          `).join('') : '<div style="text-align: center; color: #888; padding: 20px;">暂无人员数据</div>'}
+        </div>
+        
+        <div class="stats-card">
+          <div class="stats-card-title">🧱 材料统计</div>
+          ${materialList.length > 0 ? materialList.map(([name, count]) => `
+            <div class="stat-bar">
+              <span class="stat-bar-name">${name}</span>
+              <div class="stat-bar-bar">
+                <div class="stat-bar-fill" style="width: ${(count / maxMaterial) * 100}%"></div>
+              </div>
+              <span class="stat-bar-count">${count}</span>
+            </div>
+          `).join('') : '<div style="text-align: center; color: #888; padding: 20px;">暂无材料数据</div>'}
+        </div>
+        
+        <div class="stats-card">
+          <div class="stats-card-title">🚜 机械统计</div>
+          ${equipmentList.length > 0 ? equipmentList.map(([name, count]) => `
+            <div class="stat-bar">
+              <span class="stat-bar-name">${name}</span>
+              <div class="stat-bar-bar">
+                <div class="stat-bar-fill" style="width: ${(count / maxEquipment) * 100}%"></div>
+              </div>
+              <span class="stat-bar-count">${count}</span>
+            </div>
+          `).join('') : '<div style="text-align: center; color: #888; padding: 20px;">暂无机械数据</div>'}
+        </div>
+      `;
+    }
+    
+    function showChangePassword() {
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-new-password').value = '';
+      showModal('change-password-modal');
+    }
+    
+    async function handleChangePassword() {
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-new-password').value;
+      
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        showToast('请填写所有密码字段');
+        return;
+      }
+      
+      if (newPassword.length < 6) {
+        showToast('新密码至少需要6位');
+        return;
+      }
+      
+      if (newPassword !== confirmPassword) {
+        showToast('两次输入的新密码不一致');
+        return;
+      }
+      
+      showToast('修改中...');
+      
+      try {
+        const userId = localStorage.getItem('user_id');
+        const result = await apiRequest(`/users/${userId}/password`, {
+          method: 'PUT',
+          body: JSON.stringify({ old_password: currentPassword, new_password: newPassword })
+        });
+        
+        showToast('密码修改成功');
+        closeModal('change-password-modal');
+      } catch (error) {
+        showToast(error.message || '修改失败');
+      }
+    }
+    
+    async function showDeviceManagement() {
+      showModal('device-management-modal');
+      const container = document.getElementById('device-list');
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: #888;">加载中...</div>';
+      
+      try {
+        const devices = await apiRequest('/auth/devices');
+        if (devices.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="padding: 40px;">
+              <div class="empty-state-icon" style="font-size: 40px;">📱</div>
+              <div class="empty-state-text">暂无绑定设备</div>
+            </div>
+          `;
+        } else {
+          container.innerHTML = devices.map(device => `
+            <div class="project-item">
+              <div class="project-icon">📱</div>
+              <div>
+                <div style="font-weight: 600; color: #1a1a1a;">${device.device_name || '未知设备'}</div>
+                <div style="font-size: 12px; color: #888; margin-top: 2px;">
+                  最后登录: ${formatTime(device.last_login || device.created_at)}
+                </div>
+              </div>
+              <span style="color: #28a745; font-size: 12px;">✓ 已登录</span>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 40px;">
+            <div class="empty-state-icon" style="font-size: 40px;">⚠️</div>
+            <div class="empty-state-text">${error.message || '加载失败'}</div>
+          </div>
+        `;
+      }
+    }
+    
+    async function showUserManagement() {
+      showModal('user-management-modal');
+      const container = document.getElementById('user-list');
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: #888;">加载中...</div>';
+      
+      try {
+        const users = await apiRequest('/users');
+        if (users.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="padding: 40px;">
+              <div class="empty-state-icon" style="font-size: 40px;">👥</div>
+              <div class="empty-state-text">暂无用户</div>
+            </div>
+          `;
+        } else {
+          container.innerHTML = users.map(user => `
+            <div class="project-item">
+              <div class="project-icon">${user.role === 'admin' ? '👑' : '👤'}</div>
+              <div>
+                <div style="font-weight: 600; color: #1a1a1a;">
+                  ${user.username}
+                  ${user.role === 'admin' ? '<span style="color: #ffd700; font-size: 11px; margin-left: 8px;">管理员</span>' : ''}
+                </div>
+                <div style="font-size: 12px; color: #888; margin-top: 2px;">
+                  创建时间: ${formatTime(user.created_at)}
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                ${user.role !== 'admin' ? `<button onclick="toggleUserRole(${user.id}, '${user.role}')" style="padding: 4px 10px; background: #667eea; color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                  升权
+                </button>` : ''}
+                ${user.role !== 'admin' ? `<button onclick="deleteUser(${user.id}, '${user.username}')" style="padding: 4px 10px; background: #dc3545; color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                  删除
+                </button>` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 40px;">
+            <div class="empty-state-icon" style="font-size: 40px;">⚠️</div>
+            <div class="empty-state-text">${error.message || '加载失败'}</div>
+          </div>
+        `;
+      }
+    }
+    
+    async function toggleUserRole(userId, currentRole) {
+      if (!confirm(`确定要${currentRole === 'user' ? '将用户升为管理员' : '将管理员降级为普通用户'}吗？`)) {
+        return;
+      }
+      
+      try {
+        const newRole = currentRole === 'user' ? 'admin' : 'user';
+        await apiRequest(`/users/${userId}/role`, {
+          method: 'PUT',
+          body: JSON.stringify({ role: newRole })
+        });
+        showToast('角色修改成功');
+        showUserManagement();
+      } catch (error) {
+        showToast(error.message || '操作失败');
+      }
+    }
+    
+    async function deleteUser(userId, username) {
+      if (!confirm(`确定要删除用户 "${username}" 吗？此操作不可撤销。`)) {
+        return;
+      }
+      
+      try {
+        await apiRequest(`/users/${userId}`, { method: 'DELETE' });
+        showToast('用户删除成功');
+        showUserManagement();
+      } catch (error) {
+        showToast(error.message || '删除失败');
+      }
+    }
+    
+    function showCreateUser() {
+      closeModal('user-management-modal');
+      document.getElementById('create-user-name').value = '';
+      document.getElementById('create-user-password').value = '';
+      document.getElementById('create-user-role').value = 'user';
+      showModal('create-user-modal');
+    }
+    
+    async function handleCreateUser() {
+      const username = document.getElementById('create-user-name').value.trim();
+      const password = document.getElementById('create-user-password').value;
+      const role = document.getElementById('create-user-role').value;
+      
+      if (!username || !password) {
+        showToast('请填写用户名和密码');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showToast('密码至少需要6位');
+        return;
+      }
+      
+      showToast('创建中...');
+      
+      try {
+        const result = await apiRequest('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({ username, password, role })
+        });
+        
+        showToast('用户创建成功');
+        closeModal('create-user-modal');
+        showUserManagement();
+      } catch (error) {
+        showToast(error.message || '创建失败');
+      }
+    }
+    
+    async function showProjectManagement() {
+      showModal('project-management-modal');
+      const container = document.getElementById('admin-project-list');
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: #888;">加载中...</div>';
+      
+      try {
+        const projects = await apiRequest('/projects');
+        if (projects.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="padding: 40px;">
+              <div class="empty-state-icon" style="font-size: 40px;">📋</div>
+              <div class="empty-state-text">暂无项目</div>
+            </div>
+          `;
+        } else {
+          container.innerHTML = projects.map(project => `
+            <div class="project-item">
+              <div class="project-icon">🏗️</div>
+              <div style="flex: 1;">
+                <div style="font-weight: 600; color: #1a1a1a;">${project.name}</div>
+                <div style="font-size: 12px; color: #888; margin-top: 2px;">
+                  ${project.description || '暂无描述'}
+                </div>
+                <div style="font-size: 11px; color: #999; margin-top: 4px;">
+                  创建时间: ${formatTime(project.created_at)}
+                </div>
+              </div>
+              <button onclick="deleteProject(${project.id}, '${project.name}')" style="padding: 6px 12px; background: #dc3545; color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                删除
+              </button>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 40px;">
+            <div class="empty-state-icon" style="font-size: 40px;">⚠️</div>
+            <div class="empty-state-text">${error.message || '加载失败'}</div>
+          </div>
+        `;
+      }
+    }
+    
+    async function deleteProject(projectId, projectName) {
+      if (!confirm(`确定要删除项目 "${projectName}" 吗？相关日志数据也将被删除，此操作不可撤销。`)) {
+        return;
+      }
+      
+      try {
+        await apiRequest(`/projects/${projectId}`, { method: 'DELETE' });
+        showToast('项目删除成功');
+        
+        if (currentProject && currentProject.id === projectId) {
+          currentProject = null;
+          localStorage.removeItem('current_project');
+          document.getElementById('current-project').textContent = '请选择项目';
+          document.getElementById('log-list').innerHTML = '';
+          document.getElementById('stat-total').textContent = '0';
+          document.getElementById('stat-week').textContent = '0';
+          document.getElementById('stat-today').textContent = '0';
+        }
+        
+        showProjectManagement();
+      } catch (error) {
+        showToast(error.message || '删除失败');
+      }
+    }
+    
+    function showHelpCenter() {
+      showModal('help-center-modal');
+    }
+    
+    function updateTime() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      document.getElementById('sb-time').textContent = `${hours}:${minutes}`;
+    }
+    
+    updateTime();
+    setInterval(updateTime, 60000);
+    
+    const existingToken = localStorage.getItem('token');
+    if (existingToken) {
+      enterApp();
+    }
+  </script>
+</body>
+</html>

@@ -977,18 +977,18 @@
     
     .empty-state-text { font-size: 16px; font-weight: 500; }
     
-    .project-badge {
+    .login-time-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 8px 16px;
       background: var(--bg-tertiary);
       border-radius: var(--radius-md);
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-secondary);
     }
     
-    .project-badge-icon { font-size: 18px; }
+    .login-time-badge .icon { font-size: 16px; }
     
     .weather-info {
       display: flex;
@@ -1162,6 +1162,74 @@
       font-size: 14px;
       color: var(--text-primary);
     }
+    
+    .settings-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 800px;
+    }
+    .setting-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: box-shadow 0.2s;
+    }
+    .setting-card:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .setting-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .setting-icon {
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+    }
+    .setting-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .setting-desc {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+    .setting-body {
+      padding-left: 52px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+    }
+    .info-label {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+    .info-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: 'SF Mono', Monaco, monospace;
+    }
   </style>
 </head>
 <body data-theme="light">
@@ -1235,9 +1303,9 @@
             </div>
           </div>
           
-          <div class="project-badge">
-            <span class="project-badge-icon">🏢</span>
-            <span id="current-project">市中心商业综合体</span>
+          <div class="login-time-badge">
+            <span class="icon">🕐</span>
+            <span id="login-time-display">登录时间: --</span>
           </div>
         </div>
         
@@ -1261,6 +1329,10 @@
           </div>
           
           <div class="nav-section-title">设置</div>
+          <div class="nav-item" data-page="settings" onclick="switchPage('settings')">
+            <span class="nav-item-icon">⚙️</span>
+            <span class="nav-item-label">系统设置</span>
+          </div>
           <div class="nav-item" onclick="toggleTheme()">
             <span class="nav-item-icon" id="theme-icon">🌙</span>
             <span class="nav-item-label" id="theme-label">深色模式</span>
@@ -1394,13 +1466,93 @@
             </div>
           </div>
         </div>
+        
+        <div id="page-settings" class="hidden">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">系统设置</h1>
+              <p class="page-subtitle">配置系统参数、数据备份与恢复</p>
+            </div>
+          </div>
+          
+          <div class="settings-container">
+            <div class="setting-card">
+              <div class="setting-header">
+                <span class="setting-icon">📊</span>
+                <div>
+                  <div class="setting-title">系统信息</div>
+                  <div class="setting-desc">查看当前系统运行状态</div>
+                </div>
+              </div>
+              <div class="setting-body" id="system-info">
+                <div style="text-align: center; color: var(--text-tertiary);">加载中...</div>
+              </div>
+            </div>
+            
+            <div class="setting-card">
+              <div class="setting-header">
+                <span class="setting-icon">💾</span>
+                <div>
+                  <div class="setting-title">数据导出</div>
+                  <div class="setting-desc">导出所有数据为 JSON 文件</div>
+                </div>
+              </div>
+              <div class="setting-body">
+                <button class="action-btn" onclick="exportData()">
+                  <span>⬇️</span>
+                  <span>导出所有数据</span>
+                </button>
+                <div style="margin-top: 12px; font-size: 12px; color: var(--text-tertiary);">
+                  仅管理员可导出数据。导出内容包含所有用户、项目、日志等。
+                </div>
+              </div>
+            </div>
+            
+            <div class="setting-card">
+              <div class="setting-header">
+                <span class="setting-icon">📥</span>
+                <div>
+                  <div class="setting-title">数据导入</div>
+                  <div class="setting-desc">从 JSON 文件导入数据</div>
+                </div>
+              </div>
+              <div class="setting-body">
+                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImportFile(this)">
+                <button class="action-btn" onclick="document.getElementById('import-file').click()">
+                  <span>📁</span>
+                  <span>选择导入文件</span>
+                </button>
+                <div id="import-result" style="margin-top: 12px; font-size: 12px;"></div>
+                <div style="margin-top: 8px; font-size: 12px; color: var(--text-tertiary);">
+                  仅管理员可导入数据。重复数据将被自动忽略。
+                </div>
+              </div>
+            </div>
+            
+            <div class="setting-card" id="admin-only-card" style="display: none;">
+              <div class="setting-header">
+                <span class="setting-icon">⚠️</span>
+                <div>
+                  <div class="setting-title">危险操作</div>
+                  <div class="setting-desc">此操作不可逆，请谨慎使用</div>
+                </div>
+              </div>
+              <div class="setting-body">
+                <button class="action-btn" style="background: var(--danger, #dc3545);" onclick="confirmReset()">
+                  <span>🗑️</span>
+                  <span>重置所有数据</span>
+                </button>
+                <div style="margin-top: 12px; font-size: 12px; color: var(--danger, #dc3545);">
+                  警告：将删除所有数据，恢复至初始状态（保留 admin 和 demo 账户）。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="taskbar">
-      <div class="taskbar-icon active">🏗️</div>
-      <div class="taskbar-icon">📁</div>
-      <div class="taskbar-icon">⚙️</div>
       <div class="taskbar-right">
         <span>🔊</span>
         <span>🔋</span>
@@ -1619,6 +1771,7 @@
           localStorage.setItem('user_id', result.user.id);
           localStorage.setItem('username', result.user.username);
           localStorage.setItem('role', result.user.role);
+          localStorage.setItem('login_time', new Date().toISOString());
           
           currentUser = result.user;
           showToast('登录成功');
@@ -1645,6 +1798,7 @@
           localStorage.setItem('user_id', user.id);
           localStorage.setItem('username', user.username);
           localStorage.setItem('role', user.role);
+          localStorage.setItem('login_time', new Date().toISOString());
           
           currentUser = user;
           showToast('登录成功（模拟）');
@@ -1687,6 +1841,7 @@
           localStorage.setItem('user_id', result.user.id);
           localStorage.setItem('username', result.user.username);
           localStorage.setItem('role', result.user.role);
+          localStorage.setItem('login_time', new Date().toISOString());
           
           currentUser = result.user;
           showToast('注册成功');
@@ -1726,6 +1881,17 @@
       }
     }
     
+    function formatLoginTime(isoString) {
+      if (!isoString) return '--';
+      const date = new Date(isoString);
+      return date.toLocaleString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
     function enterApp() {
       const user = getCurrentUser();
       if (!user) return;
@@ -1735,10 +1901,14 @@
       const avatar = document.getElementById('user-avatar');
       const displayName = document.getElementById('user-display-name');
       const roleDisplay = document.getElementById('user-role-display');
+      const loginTimeDisplay = document.getElementById('login-time-display');
       
       avatar.textContent = user.username.charAt(0).toUpperCase();
       displayName.textContent = user.username;
       roleDisplay.textContent = user.role === 'admin' ? '系统管理员' : '项目成员';
+      
+      const loginTime = localStorage.getItem('login_time');
+      loginTimeDisplay.textContent = '登录时间: ' + formatLoginTime(loginTime);
       
       const navUsers = document.getElementById('nav-users');
       if (user.role === 'admin') {
@@ -1788,6 +1958,7 @@
       document.getElementById('page-stats').classList.toggle('hidden', page !== 'stats');
       document.getElementById('page-projects').classList.toggle('hidden', page !== 'projects');
       document.getElementById('page-users').classList.toggle('hidden', page !== 'users');
+      document.getElementById('page-settings').classList.toggle('hidden', page !== 'settings');
       
       if (page === 'logs') updateLogs();
       if (page === 'stats') {
@@ -1796,6 +1967,7 @@
       }
       if (page === 'projects') loadProjects();
       if (page === 'users') loadUsers();
+      if (page === 'settings') loadSettings();
     }
     
     function updateLogs() {
@@ -3111,6 +3283,140 @@
         enterApp();
       }
     });
+
+    async function loadSettings() {
+      try {
+        const info = await apiRequest('/settings/info');
+        
+        const role = localStorage.getItem('role');
+        const adminCard = document.getElementById('admin-only-card');
+        if (adminCard) {
+          adminCard.style.display = (role === 'admin') ? 'block' : 'none';
+        }
+        
+        const infoDiv = document.getElementById('system-info');
+        if (infoDiv) {
+          const sizeMB = (info.dbSize / 1024 / 1024).toFixed(2);
+          const serverTime = new Date(info.serverTime).toLocaleString('zh-CN');
+          
+          infoDiv.innerHTML = `
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">数据库路径</span>
+                <span class="info-value" style="font-size: 11px;">${info.databasePath}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">数据库大小</span>
+                <span class="info-value">${sizeMB} MB</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">用户数</span>
+                <span class="info-value">${info.stats.users} 人</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">项目数</span>
+                <span class="info-value">${info.stats.projects} 个</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">日志数</span>
+                <span class="info-value">${info.stats.logs} 条</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">服务器时间</span>
+                <span class="info-value" style="font-size: 11px;">${serverTime}</span>
+              </div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Load settings failed:', err);
+        const infoDiv = document.getElementById('system-info');
+        if (infoDiv) {
+          infoDiv.innerHTML = `<div style="color: var(--danger); text-align: center;">加载失败: ${err.message}</div>`;
+        }
+      }
+    }
+
+    async function exportData() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE}/settings/export`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.error || '导出失败');
+        }
+        
+        const data = await response.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.download = `shigongrizhi-export-${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('✅ 数据导出成功！');
+      } catch (err) {
+        alert('❌ 导出失败: ' + err.message);
+      }
+    }
+
+    async function handleImportFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      
+      const resultDiv = document.getElementById('import-result');
+      resultDiv.style.color = 'var(--text-primary)';
+      resultDiv.textContent = '正在导入...';
+      
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        
+        if (!data.tables) {
+          throw new Error('无效的导入文件格式');
+        }
+        
+        const result = await apiRequest('/settings/import', {
+          method: 'POST',
+          body: JSON.stringify(data)
+        });
+        
+        resultDiv.style.color = 'var(--success, #28a745)';
+        resultDiv.textContent = `✅ 导入成功！共导入 ${result.importedCount} 条记录`;
+        input.value = '';
+        
+      } catch (err) {
+        resultDiv.style.color = 'var(--danger, #dc3545)';
+        resultDiv.textContent = '❌ 导入失败: ' + err.message;
+        input.value = '';
+      }
+    }
+
+    function confirmReset() {
+      if (!confirm('⚠️ 警告：此操作将删除所有数据！\n\n确定要重置所有数据吗？\n此操作不可恢复！')) return;
+      if (!confirm('再次确认：真的要删除所有数据吗？')) return;
+      if (prompt('输入 YES_RESET_ALL_DATA 确认：') !== 'YES_RESET_ALL_DATA') {
+        alert('已取消');
+        return;
+      }
+      
+      apiRequest('/settings/reset', {
+        method: 'POST',
+        body: JSON.stringify({ confirm: 'YES_RESET_ALL_DATA' })
+      }).then(r => {
+        alert('✅ 数据已重置！\n\n默认账户：\nadmin / admin123\ndemo / 123456');
+        handleLogout();
+      }).catch(err => {
+        alert('❌ 重置失败: ' + err.message);
+      });
+    }
   </script>
 </body>
 </html>

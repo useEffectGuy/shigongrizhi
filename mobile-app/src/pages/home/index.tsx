@@ -9,10 +9,13 @@ import { projectService } from '@/services/projects';
 import { logService } from '@/services/logs';
 import { Project, LogEntry } from '@/types';
 import { mockProjects, mockLogs } from '@/data/mock';
+import { useRenderDebug, logEffect } from '@/utils/renderDebug';
 
 type FilterType = 'all' | 'week' | 'today';
 
 const HomePage: React.FC = () => {
+  const renderCount = useRenderDebug('HomePage');
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -90,22 +93,23 @@ const HomePage: React.FC = () => {
     }
   }, [currentProject, page, hasMore, useMock]);
 
-  const filterLogs = useCallback((logs: LogEntry[]): LogEntry[] => {
+  const filteredLogs = useMemo(() => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000);
+    
+    console.log(`[Home useMemo] filteredLogs calculating - filter: ${filter}, logs count: ${logs.length}`);
 
+    let result = logs;
     if (filter === 'today') {
-      return logs.filter(log => new Date(log.created_at) >= todayStart);
+      result = logs.filter(log => new Date(log.created_at) >= todayStart);
     } else if (filter === 'week') {
-      return logs.filter(log => new Date(log.created_at) >= weekStart);
+      result = logs.filter(log => new Date(log.created_at) >= weekStart);
     }
-    return logs;
-  }, [filter]);
-
-  const filteredLogs = useMemo(() => {
-    return filterLogs(logs);
-  }, [logs, filterLogs]);
+    
+    console.log(`[Home useMemo] filteredLogs result count: ${result.length}`);
+    return result;
+  }, [logs, filter]);
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -115,16 +119,21 @@ const HomePage: React.FC = () => {
     const todayCount = logs.filter(log => new Date(log.created_at) >= todayStart).length;
     const weekCount = logs.filter(log => new Date(log.created_at) >= weekStart).length;
     const totalCount = logs.length;
+    
+    console.log(`[Home useMemo] stats calculated - total: ${totalCount}, week: ${weekCount}, today: ${todayCount}`);
 
     return { todayCount, weekCount, totalCount };
   }, [logs]);
 
   const handleFilterChange = (newFilter: FilterType) => {
+    console.log(`[Home] Filter changed from ${filter} to ${newFilter}`);
     setFilter(newFilter);
   };
 
   useEffect(() => {
+    console.log('[Home useEffect] Mount effect triggered');
     if (!authService.isAuthenticated()) {
+      console.log('[Home useEffect] Not authenticated, redirecting to login');
       Taro.reLaunch({ url: '/pages/login/index' });
       return;
     }
@@ -132,7 +141,9 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    console.log('[Home useEffect] currentProject changed:', currentProject?.id, currentProject?.name);
     if (currentProject) {
+      console.log('[Home useEffect] Resetting page and loading logs for project:', currentProject.id);
       setPage(1);
       setHasMore(true);
       setLogs([]);
@@ -141,18 +152,22 @@ const HomePage: React.FC = () => {
   }, [currentProject]);
 
   useDidShow(() => {
+    console.log('[Home useDidShow] Page shown, currentProject:', currentProject?.id);
     if (currentProject && authService.isAuthenticated()) {
+      console.log('[Home useDidShow] Refreshing logs');
       loadLogs(true);
     }
   });
 
   usePullDownRefresh(() => {
+    console.log('[Home usePullDownRefresh] Pull down refresh triggered');
     setPage(1);
     setHasMore(true);
     loadLogs(true);
   });
 
   useReachBottom(() => {
+    console.log('[Home useReachBottom] Reach bottom, loading:', loading, 'hasMore:', hasMore, 'filter:', filter);
     if (!loading && hasMore && filter === 'all') {
       loadLogs(false);
     }

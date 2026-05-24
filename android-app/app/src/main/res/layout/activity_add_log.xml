@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".ui.log.AddLogActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorSurface"
+            android:elevation="0dp"
+            android:minHeight="?attr/actionBarSize"
+            app:title="新建日志"
+            app:navigationIcon="?attr/homeAsUpIndicator" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="日志日期"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <LinearLayout
+            android:id="@+id/llLogDate"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input"
+            android:gravity="center_vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/tvLogDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="请选择日期"
+                android:textColor="@color/text_hint"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📅"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="天气情况"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:id="@+id/tvWeatherError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="*请选择天气"
+            android:textColor="@color/color_primary"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupWeather"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipSunny"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☀️ 晴天"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipBackgroundColor="@color/white"
+                app:chipCornerRadius="8dp"
+                app:rippleColor="@color/color_primary" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipCloudy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☁️ 阴天"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipBackgroundColor="@color/white"
+                app:chipCornerRadius="8dp"
+                app:rippleColor="@color/color_primary" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipRainy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🌧️ 雨天"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipBackgroundColor="@color/white"
+                app:chipCornerRadius="8dp"
+                app:rippleColor="@color/color_primary" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipSnowy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="❄️ 雪天"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipBackgroundColor="@color/white"
+                app:chipCornerRadius="8dp"
+                app:rippleColor="@color/color_primary" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFoggy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🌫️ 雾霾"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                app:chipBackgroundColor="@color/white"
+                app:chipCornerRadius="8dp"
+                app:rippleColor="@color/color_primary" />
+        </com.google.android.material.chip.ChipGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="温度范围"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <EditText
+                android:id="@+id/etTempMin"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_input"
+                android:hint="最低"
+                android:inputType="number|numberSigned"
+                android:gravity="center"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"
+                android:textSize="15sp"
+                android:padding="14dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" ~ "
+                android:textColor="@color/text_secondary"
+                android:textSize="18sp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp" />
+
+            <EditText
+                android:id="@+id/etTempMax"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_input"
+                android:hint="最高"
+                android:inputType="number|numberSigned"
+                android:gravity="center"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"
+                android:textSize="15sp"
+                android:padding="14dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="℃"
+                android:textColor="@color/text_secondary"
+                android:textSize="18sp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="施工内容"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:id="@+id/tvContentError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="*请填写施工内容"
+            android:textColor="@color/color_primary"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/etContent"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input"
+            android:hint="请详细描述今日施工内容..."
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:textSize="15sp"
+            android:padding="14dp"
+            android:maxLines="5" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="施工人员"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupPersonnel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleSelection="false" />
+
+            <TextView
+                android:id="@+id/tvAddPersonnel"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_chip_add"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="+ 添加人员"
+                android:textColor="@color/color_primary"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="施工材料"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupMaterials"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleSelection="false" />
+
+            <TextView
+                android:id="@+id/tvAddMaterials"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_chip_add"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="+ 添加材料"
+                android:textColor="@color/color_primary"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="施工机械"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupMachinery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleSelection="false" />
+
+            <TextView
+                android:id="@+id/tvAddMachinery"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_chip_add"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="+ 添加机械"
+                android:textColor="@color/color_primary"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="安全质量记录"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <EditText
+            android:id="@+id/etSafetyQuality"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input"
+            android:hint="记录安全质量情况（可选）"
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:textSize="15sp"
+            android:padding="14dp"
+            android:maxLines="4" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="问题与建议"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <EditText
+            android:id="@+id/etIssues"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input"
+            android:hint="记录存在问题与建议（可选）"
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:textSize="15sp"
+            android:padding="14dp"
+            android:maxLines="4" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_button_primary"
+                android:text="保存日志"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/white"
+                android:visibility="gone" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+</ScrollView>

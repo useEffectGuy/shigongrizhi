@@ -1,17 +1,17 @@
 # 施工日志系统 - GitHub Release 自动上传脚本
-# v1.0.0
+# v1.1.0
 
 $ErrorActionPreference = "Stop"
 
 $REPO_OWNER = "useEffectGuy"
 $REPO_NAME = "shigongrizhi"
-$TAG = "v1.0.0"
+$TAG = "v1.1.0"
 $RELEASES_DIR = "$PSScriptRoot\releases"
 
 $FILES = @(
-    @{ Path = "$RELEASES_DIR\backend-v1.0.0.zip"; ContentType = "application/zip" },
-    @{ Path = "$RELEASES_DIR\desktop-v1.0.0.zip"; ContentType = "application/zip" },
-    @{ Path = "$RELEASES_DIR\mobile-app-source-v1.0.0.zip"; ContentType = "application/zip" },
+    @{ Path = "$RELEASES_DIR\backend-v1.1.0.zip"; ContentType = "application/zip" },
+    @{ Path = "$RELEASES_DIR\desktop-v1.1.0.zip"; ContentType = "application/zip" },
+    @{ Path = "$RELEASES_DIR\mobile-app-source-v1.1.0.zip"; ContentType = "application/zip" },
     @{ Path = "$RELEASES_DIR\安装使用说明.md"; ContentType = "text/markdown" }
 )
 

@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 const db = require('./db');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const settingsRoutes = require('./routes/settings');
 const projectRoutes = require('./routes/projects');
 const logRoutes = require('./routes/logs');
 const fileRoutes = require('./routes/files');
@@ -71,6 +72,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/settings', settingsRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/files', fileRoutes);

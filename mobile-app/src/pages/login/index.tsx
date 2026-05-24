@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Input, Button, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
@@ -6,6 +6,11 @@ import classNames from 'classnames';
 import { authService } from '@/services/auth';
 
 const LoginPage: React.FC = () => {
+  const renderCount = useRef(0);
+  renderCount.current++;
+  
+  console.log(`[Render Count] LoginPage render #${renderCount.current}`);
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [usernameFocused, setUsernameFocused] = useState(false);
@@ -13,7 +18,9 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (authService.isLoggedIn()) {
+    console.log('[Login useEffect] Mount effect');
+    if (authService.isAuthenticated()) {
+      console.log('[Login useEffect] Already logged in, redirecting to home');
       Taro.switchTab({ url: '/pages/home/index' });
     }
   }, []);

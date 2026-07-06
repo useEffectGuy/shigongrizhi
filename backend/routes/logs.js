@@ -8,7 +8,7 @@ function getProjectMember(projectId, userId) {
     .get(projectId, userId);
 }
 
-router.post('/:projectId', authMiddleware, (req, res) => {
+router.post('/:projectId', authMiddleware, async (req, res) => {
   const { projectId } = req.params;
   const { content, weather, temperature, imageKeys, workers, materials, equipment } = req.body;
   
@@ -24,7 +24,7 @@ router.post('/:projectId', authMiddleware, (req, res) => {
     INSERT INTO log_entries (project_id, author_id, content, weather, temperature, image_keys, workers, materials, equipment, updated_at)
     VALUES (?,?,?,?,?,?,?,?,?,?)
   `);
-  const result = stmt.run(projectId, req.user.user_id, content, weather || null, 
+  const result = await stmt.run(projectId, req.user.user_id, content, weather || null, 
     temperature || null, JSON.stringify(imageKeys || []), 
     JSON.stringify(workers || []), JSON.stringify(materials || []), JSON.stringify(equipment || []), now);
   
@@ -44,7 +44,7 @@ router.post('/:projectId', authMiddleware, (req, res) => {
   res.json(newLog);
 });
 
-router.put('/:projectId/:logId', authMiddleware, (req, res) => {
+router.put('/:projectId/:logId', authMiddleware, async (req, res) => {
   const { projectId, logId } = req.params;
   const { content, weather, temperature, imageKeys, workers, materials, equipment } = req.body;
   
@@ -62,7 +62,7 @@ router.put('/:projectId/:logId', authMiddleware, (req, res) => {
   const existingWorkers = JSON.parse(log.workers || '[]');
   const existingMaterials = JSON.parse(log.materials || '[]');
   const existingEquipment = JSON.parse(log.equipment || '[]');
-  db.prepare(`
+  await db.prepare(`
     UPDATE log_entries SET content=?, weather=?, temperature=?, image_keys=?, workers=?, materials=?, equipment=?, updated_at=? 
     WHERE id=?
   `).run(content || log.content, weather !== undefined ? weather : log.weather, 
@@ -89,7 +89,7 @@ router.put('/:projectId/:logId', authMiddleware, (req, res) => {
   res.json(updated);
 });
 
-router.delete('/:projectId/:logId', authMiddleware, (req, res) => {
+router.delete('/:projectId/:logId', authMiddleware, async (req, res) => {
   const { projectId, logId } = req.params;
   
   const member = getProjectMember(projectId, req.user.user_id);
@@ -102,7 +102,7 @@ router.delete('/:projectId/:logId', authMiddleware, (req, res) => {
     return res.status(403).json({ error: 'Can only delete your own logs or as admin' });
   }
   
-  db.prepare('DELETE FROM log_entries WHERE id = ?').run(logId);
+  await db.prepare('DELETE FROM log_entries WHERE id = ?').run(logId);
   
   const io = req.app.get('io');
   io.to(`project_${projectId}`).emit('log_deleted', { id: parseInt(logId), project_id: parseInt(projectId) });

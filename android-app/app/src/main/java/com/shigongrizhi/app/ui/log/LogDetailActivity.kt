@@ -11,9 +11,7 @@ import com.shigongrizhi.app.data.model.LogEntry
 import com.shigongrizhi.app.data.network.ApiService
 import com.shigongrizhi.app.data.network.RetrofitClient
 import com.shigongrizhi.app.databinding.ActivityLogDetailBinding
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -57,25 +55,14 @@ class LogDetailActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    apiService.getLogDetail(projectId, logId).execute()
-                }
+                val log = apiService.getLogDetail(projectId, logId)
                 
-                withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
-                    if (response.isSuccessful && response.body() != null) {
-                        bindLogData(response.body()!!)
-                    } else {
-                        Toast.makeText(this@LogDetailActivity, "加载失败", Toast.LENGTH_SHORT).show()
-                        finish()
-                    }
-                }
+                binding.progressBar.visibility = View.GONE
+                bindLogData(log)
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(this@LogDetailActivity, "网络错误: ${e.message}", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(this@LogDetailActivity, "加载失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                finish()
             }
         }
     }

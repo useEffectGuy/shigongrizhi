@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const bcrypt = require('bcryptjs');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const router = express.Router();
 
@@ -33,7 +34,7 @@ router.get('/:userId', adminMiddleware, (req, res) => {
   res.json({ ...user, projects });
 });
 
-router.delete('/:userId', adminMiddleware, (req, res) => {
+router.delete('/:userId', adminMiddleware, async (req, res) => {
   const targetId = parseInt(req.params.userId);
   
   if (targetId === req.user.user_id) {
@@ -52,17 +53,14 @@ router.delete('/:userId', adminMiddleware, (req, res) => {
     }
   }
   
-  const deleteUser = db.transaction(() => {
-    db.prepare('DELETE FROM project_members WHERE user_id = ?').run(targetId);
-    db.prepare('DELETE FROM devices WHERE user_id = ?').run(targetId);
-    db.prepare('DELETE FROM users WHERE id = ?').run(targetId);
-  });
+  await db.prepare('DELETE FROM project_members WHERE user_id = ?').run(targetId);
+  await db.prepare('DELETE FROM devices WHERE user_id = ?').run(targetId);
+  await db.prepare('DELETE FROM users WHERE id = ?').run(targetId);
   
-  deleteUser();
   res.json({ success: true });
 });
 
-router.put('/:userId/role', adminMiddleware, (req, res) => {
+router.put('/:userId/role', adminMiddleware, async (req, res) => {
   const { role } = req.body;
   const targetId = parseInt(req.params.userId);
   
@@ -86,12 +84,12 @@ router.put('/:userId/role', adminMiddleware, (req, res) => {
     }
   }
   
-  db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, targetId);
+  await db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, targetId);
   const updated = db.prepare('SELECT id, username, role, created_at FROM users WHERE id = ?').get(targetId);
   res.json(updated);
 });
 
-router.put('/:userId/password', authMiddleware, (req, res) => {
+router.put('/:userId/password', authMiddleware, async (req, res) => {
   const { current_password, new_password } = req.body;
   const targetId = parseInt(req.params.userId);
   
@@ -99,7 +97,6 @@ router.put('/:userId/password', authMiddleware, (req, res) => {
     return res.status(403).json({ error: 'Permission denied' });
   }
   
-  const bcrypt = require('bcryptjs');
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(targetId);
   
   if (!user) {
@@ -117,7 +114,7 @@ router.put('/:userId/password', authMiddleware, (req, res) => {
   }
   
   const hash = bcrypt.hashSync(new_password, 10);
-  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, targetId);
+  await db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, targetId);
   res.json({ success: true });
 });
 

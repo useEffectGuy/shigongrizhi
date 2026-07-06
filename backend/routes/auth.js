@@ -8,7 +8,7 @@ const router = express.Router();
 
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
@@ -20,7 +20,7 @@ router.post('/register', (req, res) => {
   const hash = bcrypt.hashSync(password, 10);
   try {
     const stmt = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)');
-    const result = stmt.run(username, hash);
+    const result = await stmt.run(username, hash);
     res.json({ success: true, user_id: result.lastInsertRowid, username });
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -30,7 +30,7 @@ router.post('/register', (req, res) => {
   }
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password, device_name } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
@@ -42,7 +42,7 @@ router.post('/login', (req, res) => {
   }
 
   const deviceId = uuidv4();
-  db.prepare('INSERT INTO devices (device_id, user_id, device_name) VALUES (?, ?, ?)')
+  await db.prepare('INSERT INTO devices (device_id, user_id, device_name) VALUES (?, ?, ?)')
     .run(deviceId, user.id, device_name || 'unknown');
 
   const token = jwt.sign(
@@ -59,9 +59,9 @@ router.post('/login', (req, res) => {
   });
 });
 
-router.post('/logout', authMiddleware, (req, res) => {
+router.post('/logout', authMiddleware, async (req, res) => {
   const { device_id } = req.user;
-  db.prepare('DELETE FROM devices WHERE device_id = ?').run(device_id);
+  await db.prepare('DELETE FROM devices WHERE device_id = ?').run(device_id);
   res.json({ success: true });
 });
 
@@ -73,8 +73,8 @@ router.get('/devices', authMiddleware, (req, res) => {
   res.json(devices);
 });
 
-router.delete('/devices/:deviceId', authMiddleware, (req, res) => {
-  const result = db.prepare('DELETE FROM devices WHERE device_id = ? AND user_id = ?')
+router.delete('/devices/:deviceId', authMiddleware, async (req, res) => {
+  const result = await db.prepare('DELETE FROM devices WHERE device_id = ? AND user_id = ?')
     .run(req.params.deviceId, req.user.user_id);
   if (result.changes === 0) {
     return res.status(404).json({ error: 'Device not found' });

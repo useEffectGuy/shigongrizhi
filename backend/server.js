@@ -15,6 +15,7 @@ const projectRoutes = require('./routes/projects');
 const logRoutes = require('./routes/logs');
 const fileRoutes = require('./routes/files');
 const { verifySocketToken } = require('./middleware/auth');
+const { errorHandler } = require('./middleware/errorHandler');
 
 async function main() {
   try {
@@ -140,10 +141,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not found',
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method
+  });
 });
+
+app.use(errorHandler);
 
 function startServer() {
   const PORT = parseInt(process.env.PORT) || 8519;

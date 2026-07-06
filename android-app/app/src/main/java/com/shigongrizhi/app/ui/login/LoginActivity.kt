@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
-import com.shigongrizhi.app.MyApplication
 import com.shigongrizhi.app.data.local.AppPreferences
 import com.shigongrizhi.app.data.model.LoginRequest
 import com.shigongrizhi.app.data.model.RegisterRequest
@@ -15,9 +14,7 @@ import com.shigongrizhi.app.data.network.ApiService
 import com.shigongrizhi.app.data.network.RetrofitClient
 import com.shigongrizhi.app.databinding.ActivityLoginBinding
 import com.shigongrizhi.app.ui.main.MainActivity
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
     
@@ -89,40 +86,28 @@ class LoginActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    apiService.login(
-                        LoginRequest(
-                            username = username,
-                            password = password,
-                            deviceName = "Android Device"
-                        )
-                    ).execute()
-                }
+                val loginResponse = apiService.login(
+                    LoginRequest(
+                        username = username,
+                        password = password,
+                        deviceName = "Android Device"
+                    )
+                )
                 
-                withContext(Dispatchers.Main) {
-                    showLoading(false)
-                    if (response.isSuccessful && response.body() != null) {
-                        val loginResponse = response.body()!!
-                        AppPreferences.apply {
-                            setToken(loginResponse.token)
-                            setUserId(loginResponse.userId)
-                            setUsername(loginResponse.username)
-                            setRole(loginResponse.role)
-                            setLoginTime(System.currentTimeMillis())
-                        }
-                        Toast.makeText(this@LoginActivity, "登录成功", Toast.LENGTH_SHORT).show()
-                        startMainActivity()
-                    } else {
-                        val error = response.errorBody()?.string()
-                        val errorMsg = parseError(error) ?: "登录失败"
-                        Toast.makeText(this@LoginActivity, errorMsg, Toast.LENGTH_SHORT).show()
-                    }
+                AppPreferences.apply {
+                    setToken(loginResponse.token)
+                    setUserId(loginResponse.userId)
+                    setUsername(loginResponse.username)
+                    setRole(loginResponse.role)
+                    setLoginTime(System.currentTimeMillis())
                 }
+                Toast.makeText(this@LoginActivity, "登录成功", Toast.LENGTH_SHORT).show()
+                startMainActivity()
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    showLoading(false)
-                    Toast.makeText(this@LoginActivity, "网络错误: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                val errorMsg = parseError(e.message) ?: "登录失败: ${e.message}"
+                Toast.makeText(this@LoginActivity, errorMsg, Toast.LENGTH_SHORT).show()
+            } finally {
+                showLoading(false)
             }
         }
     }
@@ -151,39 +136,27 @@ class LoginActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    apiService.register(
-                        RegisterRequest(
-                            username = username,
-                            password = password
-                        )
-                    ).execute()
-                }
+                val registerResponse = apiService.register(
+                    RegisterRequest(
+                        username = username,
+                        password = password
+                    )
+                )
                 
-                withContext(Dispatchers.Main) {
-                    showLoading(false)
-                    if (response.isSuccessful && response.body() != null) {
-                        val registerResponse = response.body()!!
-                        AppPreferences.apply {
-                            setToken(registerResponse.token)
-                            setUserId(registerResponse.user.id)
-                            setUsername(registerResponse.user.username)
-                            setRole(registerResponse.user.role)
-                            setLoginTime(System.currentTimeMillis())
-                        }
-                        Toast.makeText(this@LoginActivity, "注册成功", Toast.LENGTH_SHORT).show()
-                        startMainActivity()
-                    } else {
-                        val error = response.errorBody()?.string()
-                        val errorMsg = parseError(error) ?: "注册失败"
-                        Toast.makeText(this@LoginActivity, errorMsg, Toast.LENGTH_SHORT).show()
-                    }
+                AppPreferences.apply {
+                    setToken(registerResponse.token)
+                    setUserId(registerResponse.user.id)
+                    setUsername(registerResponse.user.username)
+                    setRole(registerResponse.user.role)
+                    setLoginTime(System.currentTimeMillis())
                 }
+                Toast.makeText(this@LoginActivity, "注册成功", Toast.LENGTH_SHORT).show()
+                startMainActivity()
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    showLoading(false)
-                    Toast.makeText(this@LoginActivity, "网络错误: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                val errorMsg = parseError(e.message) ?: "注册失败: ${e.message}"
+                Toast.makeText(this@LoginActivity, errorMsg, Toast.LENGTH_SHORT).show()
+            } finally {
+                showLoading(false)
             }
         }
     }

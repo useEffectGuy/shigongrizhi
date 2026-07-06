@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -18,9 +17,7 @@ import com.shigongrizhi.app.data.model.*
 import com.shigongrizhi.app.data.network.ApiService
 import com.shigongrizhi.app.data.network.RetrofitClient
 import com.shigongrizhi.app.databinding.ActivityAddLogBinding
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class AddLogActivity : AppCompatActivity() {
     
@@ -227,28 +224,17 @@ class AddLogActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    apiService.createLog(projectId, request).execute()
-                }
+                apiService.createLog(projectId, request)
                 
-                withContext(Dispatchers.Main) {
-                    binding.btnSave.isEnabled = true
-                    binding.progressBar.visibility = View.GONE
-                    
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@AddLogActivity, "日志保存成功", Toast.LENGTH_SHORT).show()
-                        setResult(RESULT_OK)
-                        finish()
-                    } else {
-                        Toast.makeText(this@AddLogActivity, "保存失败", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                binding.btnSave.isEnabled = true
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(this@AddLogActivity, "日志保存成功", Toast.LENGTH_SHORT).show()
+                setResult(RESULT_OK)
+                finish()
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    binding.btnSave.isEnabled = true
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(this@AddLogActivity, "网络错误: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                binding.btnSave.isEnabled = true
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(this@AddLogActivity, "保存失败: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

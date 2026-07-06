@@ -4,7 +4,7 @@ const db = require('../db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'construction-log-secret-key-change-in-production';
 
-function authMiddleware(req, res, next) {
+async function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
   if (!header) return res.status(401).json({ error: 'No token provided' });
   const token = header.split(' ')[1];
@@ -12,7 +12,7 @@ function authMiddleware(req, res, next) {
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    db.prepare('UPDATE devices SET last_active = CURRENT_TIMESTAMP WHERE device_id = ?')
+    await db.prepare('UPDATE devices SET last_active = CURRENT_TIMESTAMP WHERE device_id = ?')
       .run(decoded.device_id);
     req.user = decoded;
     next();
@@ -21,7 +21,7 @@ function authMiddleware(req, res, next) {
   }
 }
 
-function adminMiddleware(req, res, next) {
+async function adminMiddleware(req, res, next) {
   const header = req.headers.authorization;
   if (!header) return res.status(401).json({ error: 'No token provided' });
   const token = header.split(' ')[1];
@@ -29,7 +29,7 @@ function adminMiddleware(req, res, next) {
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    db.prepare('UPDATE devices SET last_active = CURRENT_TIMESTAMP WHERE device_id = ?')
+    await db.prepare('UPDATE devices SET last_active = CURRENT_TIMESTAMP WHERE device_id = ?')
       .run(decoded.device_id);
     
     const user = db.prepare('SELECT role FROM users WHERE id = ?').get(decoded.user_id);
@@ -44,10 +44,10 @@ function adminMiddleware(req, res, next) {
   }
 }
 
-function verifySocketToken(token) {
+async function verifySocketToken(token) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    db.prepare('UPDATE devices SET last_active = CURRENT_TIMESTAMP WHERE device_id = ?')
+    await db.prepare('UPDATE devices SET last_active = CURRENT_TIMESTAMP WHERE device_id = ?')
       .run(decoded.device_id);
     return decoded;
   } catch (err) {

@@ -22,9 +22,7 @@ import com.shigongrizhi.app.ui.login.LoginActivity
 import com.shigongrizhi.app.ui.log.AddLogActivity
 import com.shigongrizhi.app.ui.log.LogDetailActivity
 import com.shigongrizhi.app.ui.settings.SettingsActivity
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -104,27 +102,17 @@ class MainActivity : AppCompatActivity() {
     private fun loadProjects() {
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    apiService.getProjects().execute()
+                projects = apiService.getProjects()
+                setupProjectSpinner()
+                
+                if (AppPreferences.getCurrentProjectId() == 0 && projects.isNotEmpty()) {
+                    AppPreferences.setCurrentProject(projects[0].id, projects[0].name)
+                    binding.spinnerProjects.setSelection(0)
                 }
                 
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful && response.body() != null) {
-                        projects = response.body()!!
-                        setupProjectSpinner()
-                        
-                        if (AppPreferences.getCurrentProjectId() == 0 && projects.isNotEmpty()) {
-                            AppPreferences.setCurrentProject(projects[0].id, projects[0].name)
-                            binding.spinnerProjects.setSelection(0)
-                        }
-                        
-                        loadLogs()
-                    }
-                }
+                loadLogs()
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "加载项目失败: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                Toast.makeText(this@MainActivity, "加载项目失败: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -202,23 +190,14 @@ class MainActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    apiService.getLogs(projectId, 1, 50).execute()
-                }
-                
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful && response.body() != null) {
-                        logs = response.body()!!.logs
-                        updateStatCounts()
-                        filterLogs()
-                    }
-                }
+                val response = apiService.getLogs(projectId, 1, 50)
+                logs = response.logs
+                updateStatCounts()
+                filterLogs()
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    logs = emptyList()
-                    updateStatCounts()
-                    filterLogs()
-                }
+                logs = emptyList()
+                updateStatCounts()
+                filterLogs()
             }
         }
     }

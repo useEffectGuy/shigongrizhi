@@ -1,60 +1,59 @@
 package com.shigongrizhi.app.data.network
 
 import com.shigongrizhi.app.data.model.*
-import retrofit2.Call
 import retrofit2.http.*
 
 interface ApiService {
     
     @POST("auth/login")
-    fun login(@Body request: LoginRequest): Call<LoginResponse>
+    suspend fun login(@Body request: LoginRequest): LoginResponse
     
     @POST("auth/register")
-    fun register(@Body request: RegisterRequest): Call<RegisterResponse>
+    suspend fun register(@Body request: RegisterRequest): RegisterResponse
     
     @GET("auth/devices")
-    fun getDevices(): Call<List<Any>>
+    suspend fun getDevices(): List<Any>
     
     @GET("users")
-    fun getUsers(): Call<List<User>>
+    suspend fun getUsers(): List<User>
     
     @DELETE("users/{id}")
-    fun deleteUser(@Path("id") id: Int): Call<Any>
+    suspend fun deleteUser(@Path("id") id: Int): Any
     
     @PUT("users/{id}/role")
-    fun updateUserRole(@Path("id") id: Int, @Body body: Map<String, String>): Call<Any>
+    suspend fun updateUserRole(@Path("id") id: Int, @Body body: Map<String, String>): Any
     
     @PUT("users/{id}/password")
-    fun changePassword(@Path("id") id: Int, @Body request: ChangePasswordRequest): Call<Any>
+    suspend fun changePassword(@Path("id") id: Int, @Body request: ChangePasswordRequest): Any
     
     @GET("projects")
-    fun getProjects(): Call<List<Project>>
+    suspend fun getProjects(): List<Project>
     
     @POST("projects")
-    fun createProject(@Body request: CreateProjectRequest): Call<Project>
+    suspend fun createProject(@Body request: CreateProjectRequest): Project
     
     @DELETE("projects/{id}")
-    fun deleteProject(@Path("id") id: Int): Call<Any>
+    suspend fun deleteProject(@Path("id") id: Int): Any
     
     @GET("logs/{projectId}")
-    fun getLogs(
+    suspend fun getLogs(
         @Path("projectId") projectId: Int,
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 50
-    ): Call<LogListResponse>
+    ): LogListResponse
     
     @POST("logs/{projectId}")
-    fun createLog(
+    suspend fun createLog(
         @Path("projectId") projectId: Int,
         @Body request: CreateLogRequest
-    ): Call<LogEntry>
+    ): LogEntry
     
     @GET("logs/{projectId}/{logId}")
-    fun getLogDetail(
+    suspend fun getLogDetail(
         @Path("projectId") projectId: Int,
         @Path("logId") logId: Int
-    ): Call<LogEntry>
+    ): LogEntry
     
-    @GET("logs/{projectId}/stats")
-    fun getProjectStats(@Path("projectId") projectId: Int): Call<Any>
+    @GET("logs/{projectId}/stats/summary")
+    suspend fun getProjectStats(@Path("projectId") projectId: Int): Any
 }

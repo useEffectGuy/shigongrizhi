@@ -38,7 +38,7 @@ router.get('/:projectId', authMiddleware, (req, res) => {
   res.json({ ...project, members });
 });
 
-router.post('/', authMiddleware, (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   const { name } = req.body;
   if (!name) {
     return res.status(400).json({ error: 'Project name is required' });
@@ -50,24 +50,20 @@ router.post('/', authMiddleware, (req, res) => {
     return res.status(400).json({ error: 'Project name already exists' });
   }
   
-  const insertProject = db.transaction(() => {
-    const stmt = db.prepare('INSERT INTO projects (name, creator_id) VALUES (?, ?)');
-    const result = stmt.run(name, req.user.user_id);
-    db.prepare('INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)')
-      .run(result.lastInsertRowid, req.user.user_id, 'admin');
-    return result.lastInsertRowid;
-  });
+  const stmt = db.prepare('INSERT INTO projects (name, creator_id) VALUES (?, ?)');
+  const result = await stmt.run(name, req.user.user_id);
+  await db.prepare('INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)')
+    .run(result.lastInsertRowid, req.user.user_id, 'admin');
   
-  const projectId = insertProject();
   const project = db.prepare(`
     SELECT p.*, 'admin' as role 
     FROM projects p WHERE id = ?
-  `).get(projectId);
+  `).get(result.lastInsertRowid);
   
   res.json(project);
 });
 
-router.put('/:projectId', authMiddleware, (req, res) => {
+router.put('/:projectId', authMiddleware, async (req, res) => {
   const { name } = req.body;
   const project = db.prepare(`
     SELECT p.*, pm.role 
@@ -83,12 +79,12 @@ router.put('/:projectId', authMiddleware, (req, res) => {
     return res.status(403).json({ error: 'Only admin can edit project' });
   }
   
-  db.prepare('UPDATE projects SET name = ? WHERE id = ?').run(name, req.params.projectId);
+  await db.prepare('UPDATE projects SET name = ? WHERE id = ?').run(name, req.params.projectId);
   const updated = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.projectId);
   res.json(updated);
 });
 
-router.delete('/:projectId', authMiddleware, (req, res) => {
+router.delete('/:projectId', authMiddleware, async (req, res) => {
   const project = db.prepare(`
     SELECT p.*, pm.role 
     FROM projects p 
@@ -103,17 +99,14 @@ router.delete('/:projectId', authMiddleware, (req, res) => {
     return res.status(403).json({ error: 'Only admin can delete project' });
   }
   
-  const deleteProject = db.transaction(() => {
-    db.prepare('DELETE FROM project_members WHERE project_id = ?').run(req.params.projectId);
-    db.prepare('DELETE FROM log_entries WHERE project_id = ?').run(req.params.projectId);
-    db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.projectId);
-  });
-  deleteProject();
+  await db.prepare('DELETE FROM project_members WHERE project_id = ?').run(req.params.projectId);
+  await db.prepare('DELETE FROM log_entries WHERE project_id = ?').run(req.params.projectId);
+  await db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.projectId);
   
   res.json({ success: true });
 });
 
-router.post('/:projectId/members', authMiddleware, (req, res) => {
+router.post('/:projectId/members', authMiddleware, async (req, res) => {
   const { username } = req.body;
   const project = db.prepare(`
     SELECT p.*, pm.role 
@@ -140,7 +133,7 @@ router.post('/:projectId/members', authMiddleware, (req, res) => {
     return res.status(400).json({ error: 'User already in project' });
   }
   
-  db.prepare('INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)')
+  await db.prepare('INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)')
     .run(req.params.projectId, user.id, 'member');
   
   const member = db.prepare(`
@@ -153,7 +146,7 @@ router.post('/:projectId/members', authMiddleware, (req, res) => {
   res.json(member);
 });
 
-router.delete('/:projectId/members/:userId', authMiddleware, (req, res) => {
+router.delete('/:projectId/members/:userId', authMiddleware, async (req, res) => {
   const project = db.prepare(`
     SELECT p.*, pm.role 
     FROM projects p 
@@ -177,7 +170,7 @@ router.delete('/:projectId/members/:userId', authMiddleware, (req, res) => {
     }
   }
   
-  db.prepare('DELETE FROM project_members WHERE project_id = ? AND user_id = ?')
+  await db.prepare('DELETE FROM project_members WHERE project_id = ? AND user_id = ?')
     .run(req.params.projectId, targetUserId);
   
   res.json({ success: true });

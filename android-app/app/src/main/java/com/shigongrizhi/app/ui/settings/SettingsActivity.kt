@@ -17,9 +17,7 @@ import com.shigongrizhi.app.data.network.ApiService
 import com.shigongrizhi.app.data.network.RetrofitClient
 import com.shigongrizhi.app.databinding.ActivitySettingsBinding
 import com.shigongrizhi.app.ui.login.LoginActivity
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -121,24 +119,13 @@ class SettingsActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    apiService.changePassword(
-                        userId,
-                        ChangePasswordRequest(oldPassword, newPassword)
-                    ).execute()
-                }
-                
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        showToast("密码修改成功")
-                    } else {
-                        showToast("密码修改失败，请检查原密码是否正确")
-                    }
-                }
+                apiService.changePassword(
+                    userId,
+                    ChangePasswordRequest(oldPassword, newPassword)
+                )
+                showToast("密码修改成功")
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    showToast("网络错误: ${e.message}")
-                }
+                showToast("密码修改失败: ${e.message}")
             }
         }
     }
@@ -164,14 +151,6 @@ class SettingsActivity : AppCompatActivity() {
             .setTitle("帮助中心")
             .setMessage(helpText)
             .setPositiveButton("知道了", null)
-            .show()
-    }
-    
-    private fun showAbout() {
-        AlertDialog.Builder(this)
-            .setTitle("关于")
-            .setMessage("施工日志系统\n版本: 1.1.0\n\n简洁、高效的施工日志管理工具")
-            .setPositiveButton("确定", null)
             .show()
     }
     

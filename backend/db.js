@@ -1,6 +1,7 @@
 require('dotenv').config();
 const initSqlJs = require('sql.js');
-const fs = require('fs');
+const fs = require('fs').promises;
+const fsSync = require('fs');
 const bcrypt = require('bcryptjs');
 
 const DB_PATH = process.env.DB_PATH || 'construction.db';
@@ -9,24 +10,48 @@ let db;
 let dbInstance;
 let SQL;
 let initPromise;
+let writeQueue = [];
+let isWriting = false;
 
-function saveDatabase() {
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(DB_PATH, buffer);
+async function saveDatabase() {
+  if (isWriting) {
+    return new Promise((resolve) => {
+      writeQueue.push(resolve);
+    });
+  }
+  
+  isWriting = true;
+  
+  try {
+    const data = db.export();
+    const buffer = Buffer.from(data);
+    await fs.writeFile(DB_PATH, buffer);
+    
+    while (writeQueue.length > 0) {
+      const resolve = writeQueue.shift();
+      resolve();
+    }
+  } catch (err) {
+    console.error('Failed to save database:', err);
+    throw err;
+  } finally {
+    isWriting = false;
+  }
 }
 
 async function init() {
   SQL = await initSqlJs();
   
-  if (fs.existsSync(DB_PATH)) {
-    const fileBuffer = fs.readFileSync(DB_PATH);
+  if (fsSync.existsSync(DB_PATH)) {
+    const fileBuffer = fsSync.readFileSync(DB_PATH);
     db = new SQL.Database(fileBuffer);
   } else {
     db = new SQL.Database();
   }
   
   db.run(`PRAGMA foreign_keys = ON`);
+  db.run(`PRAGMA journal_mode = WAL`);
+  db.run(`PRAGMA synchronous = NORMAL`);
   
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
@@ -119,18 +144,18 @@ async function init() {
     console.log('Default admin account created: admin / admin123');
   }
   
-  saveDatabase();
+  await saveDatabase();
   
   dbInstance = {
     prepare(sql) {
       return {
-        run(...params) {
+        async run(...params) {
           const stmt = db.prepare(sql);
           try {
             stmt.bind(params);
             stmt.step();
             stmt.free();
-            saveDatabase();
+            await saveDatabase();
             const result = db.exec('SELECT last_insert_rowid() as id, changes() as changes');
             return {
               changes: result[0]?.values[0][1] || 0,
@@ -174,17 +199,17 @@ async function init() {
         }
       };
     },
-    exec(sql) {
+    async exec(sql) {
       db.run(sql);
-      saveDatabase();
+      await saveDatabase();
     },
-    transaction(fn) {
-      return function(...args) {
+    async transaction(fn) {
+      return async function(...args) {
         db.run('BEGIN TRANSACTION');
         try {
-          const result = fn(...args);
+          const result = await fn(...args);
           db.run('COMMIT');
-          saveDatabase();
+          await saveDatabase();
           return result;
         } catch (err) {
           db.run('ROLLBACK');

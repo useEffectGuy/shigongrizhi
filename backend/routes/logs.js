@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { authMiddleware } = require('../middleware/auth');
+const { sanitizeContent, sanitizeShortText, MAX_CONTENT_LENGTH } = require('../utils/sanitizer');
 const router = express.Router();
 
 function getProjectMember(projectId, userId) {
@@ -10,11 +11,18 @@ function getProjectMember(projectId, userId) {
 
 router.post('/:projectId', authMiddleware, async (req, res) => {
   const { projectId } = req.params;
-  const { content, weather, temperature, imageKeys, workers, materials, equipment } = req.body;
+  let { content, weather, temperature, imageKeys, workers, materials, equipment } = req.body;
   
   if (!content) {
     return res.status(400).json({ error: 'Log content is required' });
   }
+  
+  content = sanitizeContent(content);
+  if (content.length > MAX_CONTENT_LENGTH) {
+    return res.status(400).json({ error: `Content must be less than ${MAX_CONTENT_LENGTH} characters` });
+  }
+  
+  weather = sanitizeShortText(weather);
   
   const member = getProjectMember(projectId, req.user.user_id);
   if (!member) return res.status(403).json({ error: 'Not a member of this project' });
@@ -46,7 +54,7 @@ router.post('/:projectId', authMiddleware, async (req, res) => {
 
 router.put('/:projectId/:logId', authMiddleware, async (req, res) => {
   const { projectId, logId } = req.params;
-  const { content, weather, temperature, imageKeys, workers, materials, equipment } = req.body;
+  let { content, weather, temperature, imageKeys, workers, materials, equipment } = req.body;
   
   const member = getProjectMember(projectId, req.user.user_id);
   if (!member) return res.status(403).json({ error: 'Not a member of this project' });
@@ -58,6 +66,17 @@ router.put('/:projectId/:logId', authMiddleware, async (req, res) => {
     return res.status(403).json({ error: 'Can only edit your own logs or as admin' });
   }
 
+  if (content !== undefined) {
+    content = sanitizeContent(content);
+    if (content.length > MAX_CONTENT_LENGTH) {
+      return res.status(400).json({ error: `Content must be less than ${MAX_CONTENT_LENGTH} characters` });
+    }
+  }
+  
+  if (weather !== undefined) {
+    weather = sanitizeShortText(weather);
+  }
+
   const now = new Date().toISOString();
   const existingWorkers = JSON.parse(log.workers || '[]');
   const existingMaterials = JSON.parse(log.materials || '[]');
@@ -65,7 +84,7 @@ router.put('/:projectId/:logId', authMiddleware, async (req, res) => {
   await db.prepare(`
     UPDATE log_entries SET content=?, weather=?, temperature=?, image_keys=?, workers=?, materials=?, equipment=?, updated_at=? 
     WHERE id=?
-  `).run(content || log.content, weather !== undefined ? weather : log.weather, 
+  `).run(content !== undefined ? content : log.content, weather !== undefined ? weather : log.weather, 
     temperature !== undefined ? temperature : log.temperature, 
     JSON.stringify(imageKeys !== undefined ? imageKeys : JSON.parse(log.image_keys)), 
     JSON.stringify(workers !== undefined ? workers : existingWorkers),
@@ -95,78 +114,71 @@ router.delete('/:projectId/:logId', authMiddleware, async (req, res) => {
   const member = getProjectMember(projectId, req.user.user_id);
   if (!member) return res.status(403).json({ error: 'Not a member of this project' });
   
-  const log = db.prepare('SELECT * FROM log_entries WHERE id = ? AND project_id = ?').get(logId, projectId);
+  const log = db.prepare('SELECT * FROM log_entries WHERE id = ? AND project_id = ? AND deleted_at IS NULL').get(logId, projectId);
   if (!log) return res.status(404).json({ error: 'Log not found' });
   
   if (log.author_id !== req.user.user_id && member.role !== 'admin') {
     return res.status(403).json({ error: 'Can only delete your own logs or as admin' });
   }
   
-  await db.prepare('DELETE FROM log_entries WHERE id = ?').run(logId);
+  const now = new Date().toISOString();
+  await db.prepare('UPDATE log_entries SET deleted_at = ?, updated_at = ? WHERE id = ?').run(now, now, logId);
   
   const io = req.app.get('io');
   io.to(`project_${projectId}`).emit('log_deleted', { id: parseInt(logId), project_id: parseInt(projectId) });
-  res.json({ success: true, id: parseInt(logId) });
+  res.json({ success: true, id: parseInt(logId), deleted_at: now });
 });
 
-router.get('/sync/:projectId', authMiddleware, (req, res) => {
-  const { projectId } = req.params;
-  const { lastSync } = req.query;
-  
-  const member = getProjectMember(projectId, req.user.user_id);
-  if (!member) return res.status(403).json({ error: 'Forbidden' });
-  
-  let logs;
-  if (lastSync) {
-    logs = db.prepare(`
-      SELECT le.*, u.username as author_name
-      FROM log_entries le
-      JOIN users u ON le.author_id = u.id
-      WHERE le.project_id = ? AND le.updated_at > ?
-      ORDER BY le.updated_at
-    `).all(projectId, lastSync);
-  } else {
-    logs = db.prepare(`
-      SELECT le.*, u.username as author_name
-      FROM log_entries le
-      JOIN users u ON le.author_id = u.id
-      WHERE le.project_id = ?
-      ORDER BY le.updated_at
-    `).all(projectId);
-  }
-  
-  logs = logs.map(log => ({ 
-    ...log, 
-    image_keys: JSON.parse(log.image_keys),
-    workers: JSON.parse(log.workers || '[]'),
-    materials: JSON.parse(log.materials || '[]'),
-    equipment: JSON.parse(log.equipment || '[]')
-  }));
-  res.json({ logs, server_time: new Date().toISOString() });
-});
-
-router.get('/:projectId/:logId', authMiddleware, (req, res) => {
+router.post('/:projectId/:logId/restore', authMiddleware, async (req, res) => {
   const { projectId, logId } = req.params;
   
   const member = getProjectMember(projectId, req.user.user_id);
   if (!member) return res.status(403).json({ error: 'Not a member of this project' });
   
-  const log = db.prepare(`
+  const log = db.prepare('SELECT * FROM log_entries WHERE id = ? AND project_id = ? AND deleted_at IS NOT NULL').get(logId, projectId);
+  if (!log) return res.status(404).json({ error: 'Log not found in recycle bin' });
+  
+  if (log.author_id !== req.user.user_id && member.role !== 'admin') {
+    return res.status(403).json({ error: 'Can only restore your own logs or as admin' });
+  }
+  
+  const now = new Date().toISOString();
+  await db.prepare('UPDATE log_entries SET deleted_at = NULL, updated_at = ? WHERE id = ?').run(now, logId);
+  
+  const restored = db.prepare(`
     SELECT le.*, u.username as author_name
     FROM log_entries le
     JOIN users u ON le.author_id = u.id
-    WHERE le.id = ? AND le.project_id = ?
-  `).get(logId, projectId);
+    WHERE le.id = ?
+  `).get(logId);
+  restored.image_keys = JSON.parse(restored.image_keys);
+  restored.workers = JSON.parse(restored.workers || '[]');
+  restored.materials = JSON.parse(restored.materials || '[]');
+  restored.equipment = JSON.parse(restored.equipment || '[]');
   
-  if (!log) return res.status(404).json({ error: 'Log not found' });
-  log.image_keys = JSON.parse(log.image_keys);
-  log.workers = JSON.parse(log.workers || '[]');
-  log.materials = JSON.parse(log.materials || '[]');
-  log.equipment = JSON.parse(log.equipment || '[]');
-  res.json(log);
+  const io = req.app.get('io');
+  io.to(`project_${projectId}`).emit('log_restored', restored);
+  res.json(restored);
 });
 
-router.get('/:projectId', authMiddleware, (req, res) => {
+router.delete('/:projectId/:logId/force', authMiddleware, async (req, res) => {
+  const { projectId, logId } = req.params;
+  
+  const member = getProjectMember(projectId, req.user.user_id);
+  if (!member) return res.status(403).json({ error: 'Not a member of this project' });
+  
+  if (member.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admin can permanently delete logs' });
+  }
+  
+  const log = db.prepare('SELECT * FROM log_entries WHERE id = ? AND project_id = ?').get(logId, projectId);
+  if (!log) return res.status(404).json({ error: 'Log not found' });
+  
+  await db.prepare('DELETE FROM log_entries WHERE id = ?').run(logId);
+  res.json({ success: true, id: parseInt(logId), message: 'Log permanently deleted' });
+});
+
+router.get('/:projectId/recycle', authMiddleware, (req, res) => {
   const { projectId } = req.params;
   const { page = 1, limit = 20 } = req.query;
   
@@ -181,12 +193,12 @@ router.get('/:projectId', authMiddleware, (req, res) => {
     SELECT le.*, u.username as author_name
     FROM log_entries le
     JOIN users u ON le.author_id = u.id
-    WHERE le.project_id = ?
-    ORDER BY le.created_at DESC
+    WHERE le.project_id = ? AND le.deleted_at IS NOT NULL
+    ORDER BY le.deleted_at DESC
     LIMIT ? OFFSET ?
   `).all(projectId, limitNum, offset);
   
-  const total = db.prepare('SELECT COUNT(*) as count FROM log_entries WHERE project_id = ?')
+  const total = db.prepare('SELECT COUNT(*) as count FROM log_entries WHERE project_id = ? AND deleted_at IS NOT NULL')
     .get(projectId).count;
   
   logs.forEach(log => {
@@ -206,6 +218,42 @@ router.get('/:projectId', authMiddleware, (req, res) => {
   });
 });
 
+router.get('/sync/:projectId', authMiddleware, (req, res) => {
+  const { projectId } = req.params;
+  const { lastSync } = req.query;
+  
+  const member = getProjectMember(projectId, req.user.user_id);
+  if (!member) return res.status(403).json({ error: 'Forbidden' });
+  
+  let logs;
+  if (lastSync) {
+    logs = db.prepare(`
+      SELECT le.*, u.username as author_name
+      FROM log_entries le
+      JOIN users u ON le.author_id = u.id
+      WHERE le.project_id = ? AND le.deleted_at IS NULL AND le.updated_at > ?
+      ORDER BY le.updated_at
+    `).all(projectId, lastSync);
+  } else {
+    logs = db.prepare(`
+      SELECT le.*, u.username as author_name
+      FROM log_entries le
+      JOIN users u ON le.author_id = u.id
+      WHERE le.project_id = ? AND le.deleted_at IS NULL
+      ORDER BY le.updated_at
+    `).all(projectId);
+  }
+  
+  logs = logs.map(log => ({ 
+    ...log, 
+    image_keys: JSON.parse(log.image_keys),
+    workers: JSON.parse(log.workers || '[]'),
+    materials: JSON.parse(log.materials || '[]'),
+    equipment: JSON.parse(log.equipment || '[]')
+  }));
+  res.json({ logs, server_time: new Date().toISOString() });
+});
+
 router.get('/:projectId/stats/summary', authMiddleware, (req, res) => {
   const { projectId } = req.params;
   
@@ -215,7 +263,7 @@ router.get('/:projectId/stats/summary', authMiddleware, (req, res) => {
   const logs = db.prepare(`
     SELECT workers, materials, equipment
     FROM log_entries
-    WHERE project_id = ?
+    WHERE project_id = ? AND deleted_at IS NULL
   `).all(projectId);
   
   const workerStats = {};
@@ -257,6 +305,67 @@ router.get('/:projectId/stats/summary', authMiddleware, (req, res) => {
     workers: Object.values(workerStats),
     materials: Object.values(materialStats),
     equipment: Object.values(equipmentStats)
+  });
+});
+
+router.get('/:projectId/:logId', authMiddleware, (req, res) => {
+  const { projectId, logId } = req.params;
+  
+  const member = getProjectMember(projectId, req.user.user_id);
+  if (!member) return res.status(403).json({ error: 'Not a member of this project' });
+  
+  const log = db.prepare(`
+    SELECT le.*, u.username as author_name
+    FROM log_entries le
+    JOIN users u ON le.author_id = u.id
+    WHERE le.id = ? AND le.project_id = ? AND le.deleted_at IS NULL
+  `).get(logId, projectId);
+  
+  if (!log) return res.status(404).json({ error: 'Log not found' });
+  log.image_keys = JSON.parse(log.image_keys);
+  log.workers = JSON.parse(log.workers || '[]');
+  log.materials = JSON.parse(log.materials || '[]');
+  log.equipment = JSON.parse(log.equipment || '[]');
+  res.json(log);
+});
+
+router.get('/:projectId', authMiddleware, (req, res) => {
+  const { projectId } = req.params;
+  const { page = 1, limit = 20 } = req.query;
+  
+  const member = getProjectMember(projectId, req.user.user_id);
+  if (!member) return res.status(403).json({ error: 'Not a member of this project' });
+  
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const offset = (pageNum - 1) * limitNum;
+  
+  const logs = db.prepare(`
+    SELECT le.*, u.username as author_name
+    FROM log_entries le
+    JOIN users u ON le.author_id = u.id
+    WHERE le.project_id = ? AND le.deleted_at IS NULL
+    ORDER BY le.created_at DESC
+    LIMIT ? OFFSET ?
+  `).all(projectId, limitNum, offset);
+  
+  const total = db.prepare('SELECT COUNT(*) as count FROM log_entries WHERE project_id = ? AND deleted_at IS NULL')
+    .get(projectId).count;
+  
+  logs.forEach(log => {
+    log.image_keys = JSON.parse(log.image_keys);
+    log.workers = JSON.parse(log.workers || '[]');
+    log.materials = JSON.parse(log.materials || '[]');
+    log.equipment = JSON.parse(log.equipment || '[]');
+  });
+  res.json({
+    logs,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      total_pages: Math.ceil(total / limitNum)
+    }
   });
 });
 

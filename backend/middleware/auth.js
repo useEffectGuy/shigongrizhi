@@ -2,7 +2,12 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'construction-log-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  console.error('\x1b[31m%s\x1b[0m', 'ERROR: JWT_SECRET environment variable must be set and at least 32 characters long');
+  process.exit(1);
+}
 
 async function authMiddleware(req, res, next) {
   const header = req.headers.authorization;

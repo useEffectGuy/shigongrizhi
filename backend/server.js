@@ -7,6 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
+const logger = require('./utils/logger');
 const db = require('./db');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -17,31 +18,59 @@ const fileRoutes = require('./routes/files');
 const { verifySocketToken } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/errorHandler');
 
+async function migrateDefaultPasswords() {
+  const defaultAccounts = [
+    { username: 'admin', oldPassword: 'admin123', newPassword: 'Admin@123', role: 'admin' },
+    { username: 'demo', oldPassword: '123456', newPassword: 'Demo@123', role: 'user' }
+  ];
+  
+  let migratedCount = 0;
+  
+  for (const account of defaultAccounts) {
+    const user = db.prepare('SELECT * FROM users WHERE username = ?').get(account.username);
+    if (user && bcrypt.compareSync(account.oldPassword, user.password_hash)) {
+      const newHash = bcrypt.hashSync(account.newPassword, 10);
+      await db.prepare('UPDATE users SET password_hash = ? WHERE username = ?')
+        .run(newHash, account.username);
+      logger.info(`Password migrated for ${account.username}: ${account.oldPassword} -> ${account.newPassword}`);
+      migratedCount++;
+    }
+  }
+  
+  return migratedCount;
+}
+
 async function main() {
   try {
     await db.initPromise;
     
+    const migratedCount = await migrateDefaultPasswords();
+    
     const adminUser = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
     if (!adminUser) {
-      const adminHash = bcrypt.hashSync('admin123', 10);
+      const adminHash = bcrypt.hashSync('Admin@123', 10);
       db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
         .run('admin', adminHash, 'admin');
-      console.log('Default admin account created: admin / admin123');
+      logger.info('Default admin account created: admin / Admin@123');
     }
     
     const demoUser = db.prepare('SELECT * FROM users WHERE username = ?').get('demo');
     if (!demoUser) {
-      const demoHash = bcrypt.hashSync('123456', 10);
+      const demoHash = bcrypt.hashSync('Demo@123', 10);
       db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
         .run('demo', demoHash, 'user');
-      console.log('Demo user created: demo / 123456');
+      logger.info('Demo user created: demo / Demo@123');
+    }
+    
+    if (migratedCount > 0) {
+      logger.warn(`${migratedCount} default account(s) password migrated to new policy`);
     }
     
     db.saveDatabase();
     
     startServer();
   } catch (err) {
-    console.error('Database initialization failed:', err);
+    logger.error('Database initialization failed:', err);
     process.exit(1);
   }
 }
@@ -81,7 +110,7 @@ app.use('/api/files', fileRoutes);
 app.set('io', io);
 
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
+  logger.debug('Client connected:', socket.id);
   socket.user = null;
   socket.joinedProjects = new Set();
 
@@ -89,7 +118,7 @@ io.on('connection', (socket) => {
     const user = verifySocketToken(token);
     if (user) {
       socket.user = user;
-      console.log(`Socket ${socket.id} authenticated as user ${user.user_id}`);
+      logger.debug(`Socket ${socket.id} authenticated as user ${user.user_id}`);
       socket.emit('authenticated', { success: true, user });
     } else {
       socket.emit('authenticated', { success: false, error: 'Invalid token' });
@@ -111,7 +140,7 @@ io.on('connection', (socket) => {
     const room = `project_${projectId}`;
     socket.join(room);
     socket.joinedProjects.add(projectId);
-    console.log(`Socket ${socket.id} joined project ${projectId}`);
+    logger.debug(`Socket ${socket.id} joined project ${projectId}`);
     socket.emit('joined', { project_id: parseInt(projectId) });
   });
 
@@ -119,7 +148,7 @@ io.on('connection', (socket) => {
     const room = `project_${projectId}`;
     socket.leave(room);
     socket.joinedProjects.delete(projectId);
-    console.log(`Socket ${socket.id} left project ${projectId}`);
+    logger.debug(`Socket ${socket.id} left project ${projectId}`);
     socket.emit('left', { project_id: parseInt(projectId) });
   });
 
@@ -128,7 +157,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    logger.debug('Client disconnected:', socket.id);
     socket.joinedProjects.clear();
   });
 });

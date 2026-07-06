@@ -1,5 +1,7 @@
+const logger = require('../utils/logger');
+
 function errorHandler(err, req, res, next) {
-  console.error(`[${new Date().toISOString()}] Error:`, err);
+  logger.error('Error:', err);
   
   let statusCode = 500;
   let errorMessage = 'Internal server error';

@@ -4,17 +4,32 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { authMiddleware, JWT_SECRET } = require('../middleware/auth');
+const { loginLimiter, registerLimiter } = require('../middleware/rateLimiter');
+const { validatePassword, validateUsername } = require('../utils/validators');
+const { sanitizeName, MAX_NAME_LENGTH } = require('../utils/sanitizer');
 const router = express.Router();
 
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
-router.post('/register', async (req, res) => {
-  const { username, password } = req.body;
+router.post('/register', registerLimiter, async (req, res) => {
+  let { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  
+  username = sanitizeName(username);
+  if (username.length > MAX_NAME_LENGTH) {
+    return res.status(400).json({ error: `Username must be less than ${MAX_NAME_LENGTH} characters` });
+  }
+  
+  const usernameError = validateUsername(username);
+  if (usernameError) {
+    return res.status(400).json({ error: usernameError });
+  }
+  
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    return res.status(400).json({ error: passwordError });
   }
   
   const hash = bcrypt.hashSync(password, 10);
@@ -30,11 +45,14 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
-  const { username, password, device_name } = req.body;
+router.post('/login', loginLimiter, async (req, res) => {
+  let { username, password, device_name } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
+  
+  username = sanitizeName(username);
+  device_name = sanitizeName(device_name || 'unknown');
   
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
@@ -43,7 +61,7 @@ router.post('/login', async (req, res) => {
 
   const deviceId = uuidv4();
   await db.prepare('INSERT INTO devices (device_id, user_id, device_name) VALUES (?, ?, ?)')
-    .run(deviceId, user.id, device_name || 'unknown');
+    .run(deviceId, user.id, device_name);
 
   const token = jwt.sign(
     { user_id: user.id, username: user.username, device_id: deviceId, role: user.role || 'user' },

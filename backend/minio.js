@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Minio = require('minio');
+const logger = require('./utils/logger');
 
 const minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
@@ -16,10 +17,10 @@ const BUCKET_NAME = process.env.MINIO_BUCKET || 'construction-log-images';
     const exists = await minioClient.bucketExists(BUCKET_NAME);
     if (!exists) {
       await minioClient.makeBucket(BUCKET_NAME, 'us-east-1');
-      console.log(`Bucket ${BUCKET_NAME} created`);
+      logger.info(`Bucket ${BUCKET_NAME} created`);
     }
   } catch (err) {
-    console.warn('MinIO connection failed, file uploads will not work:', err.message);
+    logger.warn('MinIO connection failed, file uploads will not work:', err.message);
   }
 })();
 

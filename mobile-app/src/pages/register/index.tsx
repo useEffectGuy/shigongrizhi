@@ -14,7 +14,17 @@ const RegisterPage: React.FC = () => {
   const [confirmFocused, setConfirmFocused] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const canRegister = username.trim().length >= 3 && password.length >= 6 && password === confirmPassword && !loading;
+  const validatePassword = (pwd: string): string | null => {
+    const errors: string[] = [];
+    if (pwd.length < 8) errors.push('至少8个字符');
+    if (!/[a-z]/.test(pwd)) errors.push('包含小写字母');
+    if (!/[A-Z]/.test(pwd)) errors.push('包含大写字母');
+    if (!/[0-9]/.test(pwd)) errors.push('包含数字');
+    return errors.length === 0 ? null : errors.join('、');
+  };
+
+  const passwordError = validatePassword(password);
+  const canRegister = username.trim().length >= 3 && !passwordError && password === confirmPassword && !loading;
 
   const handleRegister = async () => {
     if (!canRegister) {
@@ -22,8 +32,8 @@ const RegisterPage: React.FC = () => {
         Taro.showToast({ title: '两次密码不一致', icon: 'none' });
       } else if (username.trim().length < 3) {
         Taro.showToast({ title: '用户名至少3位', icon: 'none' });
-      } else if (password.length < 6) {
-        Taro.showToast({ title: '密码至少6位', icon: 'none' });
+      } else if (passwordError) {
+        Taro.showToast({ title: `密码要求：${passwordError}`, icon: 'none' });
       }
       return;
     }
@@ -74,7 +84,7 @@ const RegisterPage: React.FC = () => {
           <Input
             className={styles.input}
             type="password"
-            placeholder="请输入密码（至少6位）"
+            placeholder="请输入密码（8位以上，含大小写字母和数字）"
             placeholderStyle={{ color: '#86909C' }}
             value={password}
             onInput={(e) => setPassword(e.detail.value)}

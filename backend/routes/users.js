@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db');
 const bcrypt = require('bcryptjs');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
+const { validatePassword } = require('../utils/validators');
 const router = express.Router();
 
 router.get('/', adminMiddleware, (req, res) => {
@@ -109,8 +110,13 @@ router.put('/:userId/password', authMiddleware, async (req, res) => {
     }
   }
   
-  if (!new_password || new_password.length < 6) {
-    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  if (!new_password) {
+    return res.status(400).json({ error: 'New password is required' });
+  }
+  
+  const passwordError = validatePassword(new_password);
+  if (passwordError) {
+    return res.status(400).json({ error: passwordError });
   }
   
   const hash = bcrypt.hashSync(new_password, 10);

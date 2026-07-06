@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { authMiddleware } = require('../middleware/auth');
+const { sanitizeName, MAX_NAME_LENGTH } = require('../utils/sanitizer');
 const router = express.Router();
 
 router.get('/', authMiddleware, (req, res) => {
@@ -39,9 +40,14 @@ router.get('/:projectId', authMiddleware, (req, res) => {
 });
 
 router.post('/', authMiddleware, async (req, res) => {
-  const { name } = req.body;
+  let { name } = req.body;
   if (!name) {
     return res.status(400).json({ error: 'Project name is required' });
+  }
+  
+  name = sanitizeName(name);
+  if (name.length > MAX_NAME_LENGTH) {
+    return res.status(400).json({ error: `Project name must be less than ${MAX_NAME_LENGTH} characters` });
   }
   
   const existing = db.prepare('SELECT id FROM projects WHERE name = ? AND creator_id = ?')
@@ -64,7 +70,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 router.put('/:projectId', authMiddleware, async (req, res) => {
-  const { name } = req.body;
+  let { name } = req.body;
   const project = db.prepare(`
     SELECT p.*, pm.role 
     FROM projects p 
@@ -77,6 +83,11 @@ router.put('/:projectId', authMiddleware, async (req, res) => {
   }
   if (project.role !== 'admin') {
     return res.status(403).json({ error: 'Only admin can edit project' });
+  }
+  
+  name = sanitizeName(name);
+  if (name.length > MAX_NAME_LENGTH) {
+    return res.status(400).json({ error: `Project name must be less than ${MAX_NAME_LENGTH} characters` });
   }
   
   await db.prepare('UPDATE projects SET name = ? WHERE id = ?').run(name, req.params.projectId);

@@ -3,6 +3,7 @@ const initSqlJs = require('sql.js');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const bcrypt = require('bcryptjs');
+const logger = require('./utils/logger');
 
 const DB_PATH = process.env.DB_PATH || 'construction.db';
 
@@ -27,12 +28,18 @@ async function saveDatabase() {
     const buffer = Buffer.from(data);
     await fs.writeFile(DB_PATH, buffer);
     
+    const queuedCount = writeQueue.length;
     while (writeQueue.length > 0) {
       const resolve = writeQueue.shift();
       resolve();
     }
+    
+    if (queuedCount > 0) {
+      await saveDatabase();
+    }
   } catch (err) {
-    console.error('Failed to save database:', err);
+    logger.error('Failed to save database:', err);
+    writeQueue = [];
     throw err;
   } finally {
     isWriting = false;
@@ -107,6 +114,7 @@ async function init() {
       workers TEXT DEFAULT '[]',
       materials TEXT DEFAULT '[]',
       equipment TEXT DEFAULT '[]',
+      deleted_at DATETIME,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (project_id) REFERENCES projects(id),
@@ -134,14 +142,17 @@ async function init() {
     if (!colNames.includes('equipment')) {
       db.run(`ALTER TABLE log_entries ADD COLUMN equipment TEXT DEFAULT '[]'`);
     }
+    if (!colNames.includes('deleted_at')) {
+      db.run(`ALTER TABLE log_entries ADD COLUMN deleted_at DATETIME`);
+    }
   }
   
   const adminUser = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
   if (!adminUser) {
-    const adminHash = bcrypt.hashSync('admin123', 10);
+    const adminHash = bcrypt.hashSync('Admin@123', 10);
     db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
       .run('admin', adminHash, 'admin');
-    console.log('Default admin account created: admin / admin123');
+    logger.info('Default admin account created: admin / Admin@123');
   }
   
   await saveDatabase();

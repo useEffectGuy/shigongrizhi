@@ -3,6 +3,7 @@ const db = require('../db');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const fs = require('fs');
 const path = require('path');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ router.get('/info', authMiddleware, (req, res) => {
     stats.members = db.prepare('SELECT COUNT(*) as count FROM project_members').get().count;
     stats.devices = db.prepare('SELECT COUNT(*) as count FROM devices').get().count;
   } catch (e) {
-    console.error('Error getting stats:', e);
+    logger.error('Error getting stats:', e);
   }
 
   res.json({
@@ -57,7 +58,7 @@ router.get('/export', adminMiddleware, (req, res) => {
     
     res.json(exportData);
   } catch (err) {
-    console.error('Export error:', err);
+    logger.error('Export error:', err);
     res.status(500).json({ error: 'Export failed: ' + err.message });
   }
 });
@@ -112,7 +113,7 @@ router.post('/import', adminMiddleware, (req, res) => {
             results[tableName]++;
             importedCount++;
           } catch (e) {
-            console.log(`Skipped row in ${tableName}:`, e.message);
+            logger.debug(`Skipped row in ${tableName}:`, e.message);
           }
         });
       }
@@ -127,12 +128,12 @@ router.post('/import', adminMiddleware, (req, res) => {
       details: results
     });
   } catch (err) {
-    console.error('Import error:', err);
+    logger.error('Import error:', err);
     res.status(500).json({ error: 'Import failed: ' + err.message });
   }
 });
 
-router.post('/reset', adminMiddleware, (req, res) => {
+router.post('/reset', adminMiddleware, async (req, res) => {
   const { confirm } = req.body;
   if (confirm !== 'YES_RESET_ALL_DATA') {
     return res.status(400).json({ error: 'Reset confirmation required' });
@@ -141,28 +142,32 @@ router.post('/reset', adminMiddleware, (req, res) => {
   try {
     const bcrypt = require('bcryptjs');
     
-    const resetTransaction = db.transaction(() => {
-      db.prepare('DELETE FROM devices').run();
-      db.prepare('DELETE FROM project_members').run();
-      db.prepare('DELETE FROM log_entries').run();
-      db.prepare('DELETE FROM projects').run();
-      db.prepare('DELETE FROM users').run();
+    db.run('BEGIN TRANSACTION');
+    try {
+      await db.prepare('DELETE FROM devices').run();
+      await db.prepare('DELETE FROM project_members').run();
+      await db.prepare('DELETE FROM log_entries').run();
+      await db.prepare('DELETE FROM projects').run();
+      await db.prepare('DELETE FROM users').run();
 
-      const adminHash = bcrypt.hashSync('admin123', 10);
-      db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+      const adminHash = bcrypt.hashSync('Admin@123', 10);
+      await db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
         .run('admin', adminHash, 'admin');
 
-      const demoHash = bcrypt.hashSync('123456', 10);
-      db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+      const demoHash = bcrypt.hashSync('Demo@123', 10);
+      await db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
         .run('demo', demoHash, 'user');
-    });
 
-    resetTransaction();
-    db.saveDatabase();
+      db.run('COMMIT');
+      await db.saveDatabase();
 
-    res.json({ success: true, message: 'Database has been reset to default state' });
+      res.json({ success: true, message: 'Database has been reset to default state' });
+    } catch (err) {
+      db.run('ROLLBACK');
+      throw err;
+    }
   } catch (err) {
-    console.error('Reset error:', err);
+    logger.error('Reset error:', err);
     res.status(500).json({ error: 'Reset failed: ' + err.message });
   }
 });

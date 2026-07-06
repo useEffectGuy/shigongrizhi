@@ -121,7 +121,7 @@ const LoginPage: React.FC = () => {
         <Text className={styles.demoTitle}>💡 快速体验</Text>
         <Text className={styles.demoText}>
           用户名：demo{'\n'}
-          密  码：123456{'\n\n'}
+          密  码：Demo@123{'\n\n'}
           首次登录会自动创建演示数据，可直接体验完整功能。
         </Text>
       </View>

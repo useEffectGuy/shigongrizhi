@@ -37,3 +37,14 @@ Thumbs.db
 *.sqlite3
 construction.db
 node_modules
+Android/
+android/
+ios/
+/.gradle
+/local.properties
+/app/build/
+**/build/
+*.class
+*.jar
+uploads/
+releases/

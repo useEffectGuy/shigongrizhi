@@ -1,6 +1,7 @@
 import Taro from '@tarojs/taro';
+import { logger } from './logger';
 
-const API_BASE = process.env.API_BASE_URL || 'http://localhost:8519/api';
+const API_BASE = process.env.API_BASE_URL || 'http://localhost:8519/api/v1';
 
 interface RequestOptions {
   url: string;
@@ -41,7 +42,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     }
   }
   
-  console.log(`[API] ${method} ${API_BASE}${url}`);
+  logger.debug(`[API] ${method} ${API_BASE}${url}`);
   
   try {
     const response = await Taro.request({
@@ -65,7 +66,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
     const errorData = response.data as any;
     throw new Error(errorData?.error || `请求失败: ${response.statusCode}`);
   } catch (error: any) {
-    console.error(`[API Error] ${method} ${url}:`, error.message);
+    logger.error(`[API Error] ${method} ${url}:`, error.message);
     throw error;
   }
 }
@@ -76,7 +77,7 @@ export async function uploadFile(filePath: string): Promise<{ key: string; url: 
     throw new Error('请先登录');
   }
   
-  console.log(`[API Upload] ${filePath}`);
+  logger.debug(`[API Upload] ${filePath}`);
   
   try {
     const response = await Taro.uploadFile({
@@ -91,7 +92,25 @@ export async function uploadFile(filePath: string): Promise<{ key: string; url: 
     const data = JSON.parse(response.data);
     return data;
   } catch (error: any) {
-    console.error('[API Upload Error]:', error.message);
+    logger.error('[API Upload Error]:', error.message);
     throw error;
   }
+}
+
+export async function uploadFileWithCompression(
+  filePath: string,
+  compressOptions?: { maxWidth?: number; maxHeight?: number; quality?: number }
+): Promise<{ key: string; url: string }> {
+  const { compressImage, needsCompression } = await import('./image');
+  
+  let uploadPath = filePath;
+  
+  // Check if compression is needed
+  const shouldCompress = await needsCompression(filePath);
+  if (shouldCompress) {
+    logger.debug('[API Upload] Compressing image before upload');
+    uploadPath = await compressImage(filePath, compressOptions);
+  }
+  
+  return uploadFile(uploadPath);
 }

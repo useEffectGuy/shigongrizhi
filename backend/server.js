@@ -17,6 +17,9 @@ const logRoutes = require('./routes/logs');
 const fileRoutes = require('./routes/files');
 const { verifySocketToken } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/errorHandler');
+const requestIdMiddleware = require('./middleware/requestId');
+const { apiLimiter, writeLimiter } = require('./middleware/rateLimiter');
+const { cspMiddleware, hstsMiddleware } = require('./middleware/security');
 
 async function migrateDefaultPasswords() {
   const defaultAccounts = [
@@ -97,15 +100,85 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
   credentials: true
 }));
+app.use(requestIdMiddleware);
+app.use(cspMiddleware);
+app.use(hstsMiddleware);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/logs', logRoutes);
-app.use('/api/files', fileRoutes);
+// Apply general API rate limiter to all API routes
+app.use('/api', apiLimiter);
+
+// Apply stricter rate limiter to write operations
+app.use('/api', (req, res, next) => {
+  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+    return writeLimiter(req, res, next);
+  }
+  next();
+});
+
+// Health check endpoint (no rate limiting)
+app.get('/health', (req, res) => {
+  const healthcheck = {
+    uptime: process.uptime(),
+    message: 'OK',
+    timestamp: Date.now(),
+    environment: process.env.NODE_ENV || 'development',
+    version: process.env.npm_package_version || '1.0.0'
+  };
+  
+  try {
+    // Check database connection
+    db.prepare('SELECT 1').get();
+    healthcheck.database = 'connected';
+  } catch (err) {
+    healthcheck.database = 'disconnected';
+    healthcheck.message = 'Database connection failed';
+    return res.status(503).json(healthcheck);
+  }
+  
+  res.status(200).json(healthcheck);
+});
+
+// API versioning - v1
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/projects', projectRoutes);
+app.use('/api/v1/logs', logRoutes);
+app.use('/api/v1/files', fileRoutes);
+
+// Legacy API routes (redirect to v1)
+app.use('/api/auth', (req, res, next) => {
+  logger.warn(`[API] Legacy route accessed: ${req.path}, redirecting to /api/v1${req.path}`);
+  req.url = req.url.replace('/api/', '/api/v1/');
+  next();
+}, authRoutes);
+app.use('/api/users', (req, res, next) => {
+  logger.warn(`[API] Legacy route accessed: ${req.path}, redirecting to /api/v1${req.path}`);
+  req.url = req.url.replace('/api/', '/api/v1/');
+  next();
+}, userRoutes);
+app.use('/api/settings', (req, res, next) => {
+  logger.warn(`[API] Legacy route accessed: ${req.path}, redirecting to /api/v1${req.path}`);
+  req.url = req.url.replace('/api/', '/api/v1/');
+  next();
+}, settingsRoutes);
+app.use('/api/projects', (req, res, next) => {
+  logger.warn(`[API] Legacy route accessed: ${req.path}, redirecting to /api/v1${req.path}`);
+  req.url = req.url.replace('/api/', '/api/v1/');
+  next();
+}, projectRoutes);
+app.use('/api/logs', (req, res, next) => {
+  logger.warn(`[API] Legacy route accessed: ${req.path}, redirecting to /api/v1${req.path}`);
+  req.url = req.url.replace('/api/', '/api/v1/');
+  next();
+}, logRoutes);
+app.use('/api/files', (req, res, next) => {
+  logger.warn(`[API] Legacy route accessed: ${req.path}, redirecting to /api/v1${req.path}`);
+  req.url = req.url.replace('/api/', '/api/v1/');
+  next();
+}, fileRoutes);
 
 app.set('io', io);
 

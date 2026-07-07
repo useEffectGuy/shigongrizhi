@@ -1,6 +1,7 @@
 import Taro from '@tarojs/taro';
 import { request, setToken, getToken } from '@/utils/request';
 import { User, Device, LoginResponse } from '@/types';
+import { logger } from '@/utils/logger';
 
 const STORAGE_KEYS = {
   USER: 'auth_user',
@@ -10,7 +11,7 @@ const STORAGE_KEYS = {
 
 export const authService = {
   async register(username: string, password: string): Promise<{ success: boolean; user_id: number }> {
-    console.log('[Auth] Registering user:', username);
+    logger.debug('[Auth] Registering user:', username);
     const result = await request({
       url: '/auth/register',
       method: 'POST',
@@ -21,7 +22,7 @@ export const authService = {
   },
 
   async login(username: string, password: string, deviceName: string = 'Android手机'): Promise<LoginResponse> {
-    console.log('[Auth] Logging in:', username);
+    logger.debug('[Auth] Logging in:', username);
     const result = await request<LoginResponse>({
       url: '/auth/login',
       method: 'POST',
@@ -37,14 +38,14 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    console.log('[Auth] Logging out');
+    logger.debug('[Auth] Logging out');
     try {
       await request({
         url: '/auth/logout',
         method: 'POST'
       });
     } catch (error) {
-      console.warn('[Auth] Server logout failed, proceeding with local logout');
+      logger.warn('[Auth] Server logout failed, proceeding with local logout');
     }
     
     setToken(null);
@@ -54,17 +55,17 @@ export const authService = {
   },
 
   async getCurrentUser(): Promise<User> {
-    console.log('[Auth] Getting current user');
+    logger.debug('[Auth] Getting current user');
     return request<User>({ url: '/auth/me' });
   },
 
   async getDevices(): Promise<Device[]> {
-    console.log('[Auth] Getting devices');
+    logger.debug('[Auth] Getting devices');
     return request<Device[]>({ url: '/auth/devices' });
   },
 
   async removeDevice(deviceId: string): Promise<void> {
-    console.log('[Auth] Removing device:', deviceId);
+    logger.debug('[Auth] Removing device:', deviceId);
     await request({
       url: `/auth/devices/${deviceId}`,
       method: 'DELETE'

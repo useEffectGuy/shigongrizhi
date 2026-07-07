@@ -1,23 +1,24 @@
 import { request } from '@/utils/request';
 import { LogEntry, LogListResponse, SyncResponse, WorkerEntry, MaterialEntry, EquipmentEntry } from '@/types';
+import { logger } from '@/utils/logger';
 
 export const logService = {
   async getLogs(projectId: number, page: number = 1, limit: number = 20): Promise<LogListResponse> {
-    console.log(`[Log] Getting logs for project ${projectId}, page ${page}`);
+    logger.debug(`[Log] Getting logs for project ${projectId}, page ${page}`);
     return request<LogListResponse>({
       url: `/logs/${projectId}?page=${page}&limit=${limit}`
     });
   },
 
   async getLogDetail(projectId: number, logId: number): Promise<LogEntry> {
-    console.log(`[Log] Getting log detail: ${logId}`);
+    logger.debug(`[Log] Getting log detail: ${logId}`);
     return request<LogEntry>({
       url: `/logs/${projectId}/${logId}`
     });
   },
 
   async getLogById(logId: number): Promise<LogEntry> {
-    console.log(`[Log] Getting log by id: ${logId}`);
+    logger.debug(`[Log] Getting log by id: ${logId}`);
     const project = JSON.parse(localStorage.getItem('currentProject') || '{"id":1}');
     return this.getLogDetail(project.id, logId);
   },
@@ -31,7 +32,7 @@ export const logService = {
     materials?: MaterialEntry[];
     equipment?: EquipmentEntry[];
   }): Promise<LogEntry> {
-    console.log(`[Log] Creating log for project ${projectId}`);
+    logger.debug(`[Log] Creating log for project ${projectId}`);
     return request<LogEntry>({
       url: `/logs/${projectId}`,
       method: 'POST',
@@ -56,7 +57,7 @@ export const logService = {
     materials?: MaterialEntry[];
     equipment?: EquipmentEntry[];
   }): Promise<LogEntry> {
-    console.log(`[Log] Updating log: ${logId}`);
+    logger.debug(`[Log] Updating log: ${logId}`);
     return request<LogEntry>({
       url: `/logs/${projectId}/${logId}`,
       method: 'PUT',
@@ -65,7 +66,7 @@ export const logService = {
   },
 
   async deleteLog(projectId: number, logId: number): Promise<void> {
-    console.log(`[Log] Deleting log: ${logId}`);
+    logger.debug(`[Log] Deleting log: ${logId}`);
     await request({
       url: `/logs/${projectId}/${logId}`,
       method: 'DELETE'
@@ -76,7 +77,7 @@ export const logService = {
     const url = lastSync 
       ? `/logs/sync/${projectId}?lastSync=${encodeURIComponent(lastSync)}`
       : `/logs/sync/${projectId}`;
-    console.log(`[Log] Syncing logs for project ${projectId}`);
+    logger.debug(`[Log] Syncing logs for project ${projectId}`);
     return request<SyncResponse>({ url });
   },
 
@@ -86,7 +87,7 @@ export const logService = {
     materials: { name: string; count: number; unit: string; log_count: number }[];
     equipment: { name: string; count: number; unit: string; log_count: number }[];
   }> {
-    console.log(`[Log] Getting stats for project ${projectId}`);
+    logger.debug(`[Log] Getting stats for project ${projectId}`);
     return request({
       url: `/logs/${projectId}/stats/summary`
     });

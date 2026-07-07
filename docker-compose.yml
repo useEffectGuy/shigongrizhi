@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Backend API service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shigongrizhi-backend
+    ports:
+      - "8519:8519"
+    environment:
+      - NODE_ENV=production
+      - PORT=8519
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_USE_SSL=false
+      - MINIO_BUCKET=construction-log-images
+      - CORS_ORIGIN=*
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/construction.db:/app/construction.db
+    depends_on:
+      - minio
+    restart: unless-stopped
+    networks:
+      - shigongrizhi-network
+
+  # MinIO object storage
+  minio:
+    image: minio/minio:latest
+    container_name: shigongrizhi-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    networks:
+      - shigongrizhi-network
+
+volumes:
+  minio-data:
+    driver: local
+
+networks:
+  shigongrizhi-network:
+    driver: bridge

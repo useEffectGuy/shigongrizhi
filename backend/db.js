@@ -13,37 +13,62 @@ let SQL;
 let initPromise;
 let writeQueue = [];
 let isWriting = false;
+let pendingWrites = 0;
+let writeTimer = null;
+const WRITE_DELAY = 1000; // 1 second delay for batch writes
 
 async function saveDatabase() {
-  if (isWriting) {
-    return new Promise((resolve) => {
-      writeQueue.push(resolve);
-    });
+  pendingWrites++;
+  
+  // Clear existing timer and set new one for batch write
+  if (writeTimer) {
+    clearTimeout(writeTimer);
   }
   
-  isWriting = true;
-  
-  try {
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    await fs.writeFile(DB_PATH, buffer);
-    
-    const queuedCount = writeQueue.length;
-    while (writeQueue.length > 0) {
-      const resolve = writeQueue.shift();
-      resolve();
-    }
-    
-    if (queuedCount > 0) {
-      await saveDatabase();
-    }
-  } catch (err) {
-    logger.error('Failed to save database:', err);
-    writeQueue = [];
-    throw err;
-  } finally {
-    isWriting = false;
-  }
+  return new Promise((resolve, reject) => {
+    writeTimer = setTimeout(async () => {
+      if (isWriting) {
+        writeQueue.push({ resolve, reject });
+        return;
+      }
+      
+      isWriting = true;
+      const writesToProcess = pendingWrites;
+      pendingWrites = 0;
+      
+      try {
+        const data = db.export();
+        const buffer = Buffer.from(data);
+        await fs.writeFile(DB_PATH, buffer);
+        
+        // Resolve all queued promises
+        while (writeQueue.length > 0) {
+          const { resolve } = writeQueue.shift();
+          resolve();
+        }
+        
+        resolve();
+        
+        // If there are more pending writes, trigger another save
+        if (pendingWrites > 0) {
+          await saveDatabase();
+        }
+      } catch (err) {
+        logger.error('Failed to save database:', err);
+        
+        // Reject all queued promises
+        while (writeQueue.length > 0) {
+          const { reject } = writeQueue.shift();
+          reject(err);
+        }
+        
+        reject(err);
+      } finally {
+        isWriting = false;
+        writeTimer = null;
+      }
+    }, WRITE_DELAY);
+  });
 }
 
 async function init() {

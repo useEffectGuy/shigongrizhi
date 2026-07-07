@@ -9,7 +9,8 @@ import { projectService } from '@/services/projects';
 import { logService } from '@/services/logs';
 import { Project, LogEntry } from '@/types';
 import { mockProjects, mockLogs } from '@/data/mock';
-import { useRenderDebug, logEffect } from '@/utils/renderDebug';
+import { useRenderDebug } from '@/utils/renderDebug';
+import { logger } from '@/utils/logger';
 
 type FilterType = 'all' | 'week' | 'today';
 
@@ -27,7 +28,7 @@ const HomePage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('all');
 
   const loadProjects = useCallback(async () => {
-    console.log('[Home] Loading projects');
+    logger.debug('[Home] Loading projects');
     try {
       const data = await projectService.getProjects();
       setProjects(data);
@@ -46,7 +47,7 @@ const HomePage: React.FC = () => {
         authService.setCurrentProject({ id: data[0].id, name: data[0].name });
       }
     } catch (error: any) {
-      console.warn('[Home] Failed to load projects, using mock:', error.message);
+      logger.warn('[Home] Failed to load projects, using mock:', error.message);
       setUseMock(true);
       setProjects(mockProjects);
       if (mockProjects.length > 0) {
@@ -63,7 +64,7 @@ const HomePage: React.FC = () => {
     if (!isRefresh && !hasMore) return;
     
     setLoading(true);
-    console.log(`[Home] Loading logs, page: ${currentPage}`);
+    logger.debug(`[Home] Loading logs, page: ${currentPage}`);
     
     try {
       if (useMock) {
@@ -83,7 +84,7 @@ const HomePage: React.FC = () => {
         setPage(currentPage + 1);
       }
     } catch (error: any) {
-      console.error('[Home] Failed to load logs:', error.message);
+      logger.error('[Home] Failed to load logs:', error.message);
       Taro.showToast({ title: '加载失败', icon: 'none' });
     } finally {
       setLoading(false);
@@ -98,7 +99,7 @@ const HomePage: React.FC = () => {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000);
     
-    console.log(`[Home useMemo] filteredLogs calculating - filter: ${filter}, logs count: ${logs.length}`);
+    logger.debug(`[Home useMemo] filteredLogs calculating - filter: ${filter}, logs count: ${logs.length}`);
 
     let result = logs;
     if (filter === 'today') {
@@ -107,7 +108,7 @@ const HomePage: React.FC = () => {
       result = logs.filter(log => new Date(log.created_at) >= weekStart);
     }
     
-    console.log(`[Home useMemo] filteredLogs result count: ${result.length}`);
+    logger.debug(`[Home useMemo] filteredLogs result count: ${result.length}`);
     return result;
   }, [logs, filter]);
 
@@ -120,20 +121,20 @@ const HomePage: React.FC = () => {
     const weekCount = logs.filter(log => new Date(log.created_at) >= weekStart).length;
     const totalCount = logs.length;
     
-    console.log(`[Home useMemo] stats calculated - total: ${totalCount}, week: ${weekCount}, today: ${todayCount}`);
+    logger.debug(`[Home useMemo] stats calculated - total: ${totalCount}, week: ${weekCount}, today: ${todayCount}`);
 
     return { todayCount, weekCount, totalCount };
   }, [logs]);
 
   const handleFilterChange = (newFilter: FilterType) => {
-    console.log(`[Home] Filter changed from ${filter} to ${newFilter}`);
+    logger.debug(`[Home] Filter changed from ${filter} to ${newFilter}`);
     setFilter(newFilter);
   };
 
   useEffect(() => {
-    console.log('[Home useEffect] Mount effect triggered');
+    logger.debug('[Home useEffect] Mount effect triggered');
     if (!authService.isAuthenticated()) {
-      console.log('[Home useEffect] Not authenticated, redirecting to login');
+      logger.debug('[Home useEffect] Not authenticated, redirecting to login');
       Taro.reLaunch({ url: '/pages/login/index' });
       return;
     }
@@ -141,9 +142,9 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    console.log('[Home useEffect] currentProject changed:', currentProject?.id, currentProject?.name);
+    logger.debug('[Home useEffect] currentProject changed:', currentProject?.id, currentProject?.name);
     if (currentProject) {
-      console.log('[Home useEffect] Resetting page and loading logs for project:', currentProject.id);
+      logger.debug('[Home useEffect] Resetting page and loading logs for project:', currentProject.id);
       setPage(1);
       setHasMore(true);
       setLogs([]);
@@ -152,22 +153,22 @@ const HomePage: React.FC = () => {
   }, [currentProject]);
 
   useDidShow(() => {
-    console.log('[Home useDidShow] Page shown, currentProject:', currentProject?.id);
+    logger.debug('[Home useDidShow] Page shown, currentProject:', currentProject?.id);
     if (currentProject && authService.isAuthenticated()) {
-      console.log('[Home useDidShow] Refreshing logs');
+      logger.debug('[Home useDidShow] Refreshing logs');
       loadLogs(true);
     }
   });
 
   usePullDownRefresh(() => {
-    console.log('[Home usePullDownRefresh] Pull down refresh triggered');
+    logger.debug('[Home usePullDownRefresh] Pull down refresh triggered');
     setPage(1);
     setHasMore(true);
     loadLogs(true);
   });
 
   useReachBottom(() => {
-    console.log('[Home useReachBottom] Reach bottom, loading:', loading, 'hasMore:', hasMore, 'filter:', filter);
+    logger.debug('[Home useReachBottom] Reach bottom, loading:', loading, 'hasMore:', hasMore, 'filter:', filter);
     if (!loading && hasMore && filter === 'all') {
       loadLogs(false);
     }
